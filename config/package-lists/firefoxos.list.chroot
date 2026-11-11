@@ -1,50 +1,81 @@
+# Firefox OS "slim" - tuned for old PCs with 1-2 GB RAM
+
 # --- Live system + installer ---
 live-boot
 live-config
 live-config-systemd
+user-setup
+live-boot-initramfs-tools
 calamares
 calamares-settings-debian
 grub-efi-amd64-signed
 shim-signed
+grub-pc-bin
 
-# --- Hardware support ---
+# --- Hardware ---
 linux-image-amd64
-firmware-linux
-firmware-linux-nonfree
+firmware-linux-free
+firmware-amd-graphics
+firmware-misc-nonfree
 firmware-iwlwifi
 firmware-realtek
 firmware-atheros
-firmware-misc-nonfree
+firmware-brcm80211
+intel-microcode
 network-manager
+wpasupplicant
 network-manager-gnome
-bluez
-blueman
 pipewire
 pipewire-pulse
 wireplumber
 pavucontrol
+zram-tools
+xserver-xorg-video-ati
+xserver-xorg-video-intel
+xserver-xorg-video-nouveau
+xserver-xorg-video-vmware
+xserver-xorg-video-fbdev
+xserver-xorg-input-libinput
 
-# --- Desktop shell (restyled as Firefox OS) ---
-xorg
+# --- Light desktop shell ---
+xserver-xorg-core
+xinit
+x11-xserver-utils
 lightdm
 lightdm-gtk-greeter
 light-locker
-xfce4
-xfce4-goodies
+xfce4-session
+xfwm4
+xfce4-panel
+xfdesktop4
+xfce4-settings
+xfconf
+thunar
+thunar-volman
+gvfs
+xfce4-terminal
 xfce4-whiskermenu-plugin
 xfce4-pulseaudio-plugin
 xfce4-notifyd
 xfce4-power-manager
+xfce4-xkb-plugin
 xfce4-screenshooter
-thunar
-plymouth
-plymouth-themes
+lxpolkit
+policykit-1-gnome
+pkexec
+polkitd
 papirus-icon-theme
-fonts-noto
+adwaita-icon-theme
+gnome-themes-extra
+librsvg2-common
+fonts-noto-core
 fonts-noto-color-emoji
-fonts-noto-cjk
+dbus-x11
+xdg-user-dirs
+xdg-utils
+sudo
 
-# --- Firefox browser, in every supported language ---
+# --- Firefox + languages ---
 firefox-esr
 firefox-esr-l10n-it
 firefox-esr-l10n-el
@@ -52,50 +83,22 @@ firefox-esr-l10n-es-es
 firefox-esr-l10n-fr
 firefox-esr-l10n-de
 firefox-esr-l10n-pt-pt
-firefox-esr-l10n-pt-br
 firefox-esr-l10n-pl
-
-# --- Multi-language ---
-locales-all
+locales
 keyboard-configuration
-console-setup
-ibus
-hunspell-it
-hunspell-el
-hunspell-es
-hunspell-fr
-hunspell-de-de
-hunspell-pt-pt
-hunspell-pl
 
-# --- App stores: Firefox OS web apps + Linux apps (Flatpak & Debian) ---
+# --- Marketplace / Emulators ---
 flatpak
-gnome-software
-gnome-software-plugin-flatpak
 python3-gi
 gir1.2-gtk-3.0
-gir1.2-notify-0.7
-
-# --- Built-in apps (match the Start menu) ---
-gnome-calculator
-gnome-calendar
-gnome-clocks
-thunderbird
-thunderbird-l10n-it
-ristretto
-gnome-maps
-rhythmbox
-mousepad
-parole
-gnome-weather
-xfce4-terminal
-xfce4-notes-plugin
-file-roller
-
-# --- Emulators app runtime deps (B2G desktop needs these old-style libs) ---
-libgtk-3-0t64
-libdbus-glib-1-2
-libasound2t64
-libxt6t64
+libnotify-bin
 bzip2
 xz-utils
+libdbus-glib-1-2
+
+# --- Light built-in apps ---
+galculator
+mousepad
+ristretto
+parole
+file-roller

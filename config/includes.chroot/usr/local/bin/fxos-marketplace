@@ -2,6 +2,7 @@
 """Firefox OS Marketplace: install Firefox OS web apps and Linux apps (Flathub)."""
 import json
 import os
+import shutil
 import subprocess
 import threading
 from xml.sax.saxutils import escape
@@ -239,9 +240,10 @@ class Market(Gtk.Window):
         self.search = Gtk.SearchEntry(placeholder_text=S["search"])
         self.search.connect("activate", self.on_search)
         top.pack_start(self.search, True, True, 0)
-        more = Gtk.Button(label=S["more"])
-        more.connect("clicked", lambda *_: subprocess.Popen(["gnome-software"]))
-        top.pack_start(more, False, False, 0)
+        if shutil.which("gnome-software"):
+            more = Gtk.Button(label=S["more"])
+            more.connect("clicked", lambda *_: subprocess.Popen(["gnome-software"]))
+            top.pack_start(more, False, False, 0)
         self.linux_page.pack_start(top, False, False, 0)
         self.status = Gtk.Label(xalign=0)
         self.linux_page.pack_start(self.status, False, False, 0)

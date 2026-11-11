@@ -24,3 +24,21 @@ jobs:
             firefoxos-amd64.iso
             firefoxos-amd64.iso.sha256
           compression-level: 0
+  publish:
+    needs: iso
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: firefoxos-iso
+      - name: Publish public download (no sign-in needed)
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          TAG="build-${{ github.run_number }}"
+          split -b 1900M -d firefoxos-amd64.iso firefoxos-amd64.iso.part
+          gh release create "$TAG" firefoxos-amd64.iso.part* firefoxos-amd64.iso.sha256 \
+            -R "$GITHUB_REPOSITORY" --title "Firefox OS slim ($TAG)" --latest \
+            --notes "Join the parts: cat firefoxos-amd64.iso.part* > firefoxos-amd64.iso"

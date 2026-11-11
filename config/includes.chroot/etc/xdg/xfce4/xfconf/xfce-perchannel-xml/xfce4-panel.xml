@@ -34,8 +34,6 @@
       <property name="items" type="array">
         <value type="string" value="thunar.desktop"/>
         <value type="string" value="firefox-esr.desktop"/>
-        <value type="string" value="thunderbird.desktop"/>
-        <value type="string" value="org.gnome.Rhythmbox3.desktop"/>
         <value type="string" value="fxos-marketplace.desktop"/>
         <value type="string" value="fxos-emulators.desktop"/>
         <value type="string" value="xfce-settings-manager.desktop"/>

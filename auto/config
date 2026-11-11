@@ -10,11 +10,11 @@ lb config noauto \
     --debian-installer none \
     --iso-application "Firefox OS" \
     --iso-publisher "Firefox OS personal build" \
-    --iso-volume "FIREFOXOS" \
+    --iso-volume "FIREFOXOS_SLIM" \
     --image-name live-image \
     --memtest none \
-    --bootappend-live "boot=live components quiet splash hostname=firefoxos username=user user-fullname=Live locales=en_US.UTF-8 keyboard-layouts=us" \
-    --apt-recommends true \
+    --bootappend-live "boot=live components quiet hostname=firefoxos username=user user-fullname=Live locales=en_US.UTF-8 keyboard-layouts=us" \
+    --apt-recommends false \
     --security true \
     --updates true \
     "${@}"

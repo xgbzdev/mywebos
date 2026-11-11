@@ -22,7 +22,7 @@ flatpak remote-add --if-not-exists flathub https://dl.flathub.org/repo/flathub.f
 mkdir -p /etc/lightdm/lightdm-gtk-greeter.conf.d
 cat > /etc/lightdm/lightdm-gtk-greeter.conf.d/50-firefoxos.conf <<'EOF'
 [greeter]
-background=/usr/share/firefoxos/wallpapers/default.svg
+background=/usr/share/firefoxos/wallpapers/default.png
 theme-name=Adwaita
 icon-theme-name=Papirus
 font-name=Noto Sans 11
@@ -81,3 +81,55 @@ EOF
 
 chmod 755 /usr/local/bin/fxos-* || true
 update-desktop-database /usr/share/applications || true
+
+# ==== Slim edition extras ====================================================
+# Generate only the 8 supported languages (instead of locales-all)
+cat > /etc/locale.gen <<'L'
+en_US.UTF-8 UTF-8
+en_GB.UTF-8 UTF-8
+it_IT.UTF-8 UTF-8
+el_GR.UTF-8 UTF-8
+es_ES.UTF-8 UTF-8
+fr_FR.UTF-8 UTF-8
+de_DE.UTF-8 UTF-8
+pt_PT.UTF-8 UTF-8
+pl_PL.UTF-8 UTF-8
+L
+locale-gen
+
+# Compressed RAM swap: makes 1-2 GB machines far less likely to freeze
+if [ -f /etc/default/zramswap ]; then
+    sed -i 's/^#\?ALGO=.*/ALGO=zstd/; s/^#\?PERCENT=.*/PERCENT=60/' /etc/default/zramswap
+fi
+systemctl enable zramswap.service 2>/dev/null || true
+cat > /etc/sysctl.d/90-firefoxos-lowmem.conf <<'S'
+vm.swappiness=100
+vm.vfs_cache_pressure=150
+S
+
+# Default wallpaper everywhere (xfdesktop fallback + Debian desktop-base)
+for f in /usr/share/images/desktop-base/default \
+         /usr/share/images/desktop-base/desktop-background \
+         /usr/share/backgrounds/xfce/xfce-shapes.svg \
+         /usr/share/backgrounds/xfce/xfce-x.svg \
+         /usr/share/backgrounds/xfce/xfce-verticals.png; do
+    if [ -e "$f" ] || [ -L "$f" ]; then
+        rm -f "$f"; ln -s /usr/share/firefoxos/wallpapers/default.png "$f"
+    fi
+done
+mkdir -p /usr/share/images/desktop-base
+ln -sf /usr/share/firefoxos/wallpapers/default.png /usr/share/images/desktop-base/default
+
+# Firefox: lighter on RAM
+mkdir -p /etc/firefox/policies
+python3 - <<'P'
+import json
+p = "/etc/firefox/policies/policies.json"
+d = json.load(open(p))
+prefs = d["policies"].setdefault("Preferences", {})
+for k, v in {"dom.ipc.processCount": 2, "browser.cache.memory.capacity": 32768,
+             "browser.sessionhistory.max_total_viewers": 0,
+             "extensions.pocket.enabled": False}.items():
+    prefs[k] = {"Value": v, "Status": "default"}
+json.dump(d, open(p, "w"), indent=2)
+P

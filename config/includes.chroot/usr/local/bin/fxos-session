@@ -15,4 +15,8 @@ for f in thunar firefox-esr fxos-marketplace; do
     [ -f "$DESK/$f.desktop" ] || { cp /usr/share/applications/$f.desktop "$DESK/" 2>/dev/null && chmod +x "$DESK/$f.desktop"; }
 done
 sleep 2
+# Set the Firefox OS wallpaper on every monitor xfdesktop knows about
+for prop in $(xfconf-query -c xfce4-desktop -l 2>/dev/null | grep -E "last-image$"); do
+    xfconf-query -c xfce4-desktop -p "$prop" -s /usr/share/firefoxos/wallpapers/default.png
+done
 exec fxos-welcome --autostart

@@ -20,6 +20,24 @@ apt-get install -y live-build debootstrap xorriso squashfs-tools \
 # Ubuntu's live-build is old; it still works for a Debian target but needs the keyring.
 chmod +x auto/* config/hooks/normal/*.hook.chroot config/includes.chroot/usr/local/bin/*
 
+echo "==> Checking package names against the Debian archive..."
+if [ -f /etc/apt/sources.list.d/debian.sources ]; then
+    sed -i 's/^Components: main$/Components: main contrib non-free non-free-firmware/' /etc/apt/sources.list.d/debian.sources
+    apt-get update -qq
+fi
+for list in config/package-lists/*.list.chroot; do
+    tmp=$(mktemp)
+    while IFS= read -r line; do
+        pkg=$(echo "$line" | sed 's/#.*//' | xargs)
+        if [ -z "$pkg" ] || apt-cache show "$pkg" >/dev/null 2>&1; then
+            echo "$line" >> "$tmp"
+        else
+            echo "   skipping unavailable package: $pkg"
+        fi
+    done < "$list"
+    mv "$tmp" "$list"
+done
+
 echo "==> Cleaning previous build..."
 lb clean --purge || true
 
