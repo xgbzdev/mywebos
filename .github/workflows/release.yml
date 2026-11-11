@@ -1,0 +1,28 @@
+name: Publish ISO download
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - '.github/workflows/release.yml'
+permissions:
+  contents: write
+  actions: read
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: firefoxos-iso
+          run-id: 43091861967
+          github-token: ${{ github.token }}
+      - name: Split and publish
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          ls -la
+          split -b 1900M -d firefoxos-amd64.iso firefoxos-amd64.iso.part
+          ls -la
+          gh release create v2.0 firefoxos-amd64.iso.part* firefoxos-amd64.iso.sha256 \
+            -R "$GITHUB_REPOSITORY" --title "Firefox OS 2.0 ISO" \
+            --notes "Download both parts and join them: cat firefoxos-amd64.iso.part* > firefoxos-amd64.iso"
