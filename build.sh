@@ -4,6 +4,8 @@
 #     sudo ./build.sh
 # Output: firefoxos-amd64.iso in this folder.
 set -euo pipefail
+cd "$(dirname "$(readlink -f "$0")")"
+exec > >(tee -a build.log) 2>&1
 
 if [ "$(id -u)" -ne 0 ]; then
     echo "Please run as root:  sudo ./build.sh" >&2
