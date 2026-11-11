@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Name=Welcome to Firefox OS
+Name[it]=Benvenuto in Firefox OS
+Comment=Language, keyboard and first steps
+Exec=fxos-welcome
+Icon=firefoxos
+Categories=Settings;
+Terminal=false

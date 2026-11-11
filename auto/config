@@ -1,0 +1,20 @@
+#!/bin/sh
+set -e
+# Debian 13 "trixie" base, XFCE desktop restyled as Firefox OS, live + installer.
+lb config noauto \
+    --distribution trixie \
+    --architectures amd64 \
+    --archive-areas "main contrib non-free non-free-firmware" \
+    --binary-images iso-hybrid \
+    --bootloaders "grub-efi,syslinux" \
+    --debian-installer none \
+    --iso-application "Firefox OS" \
+    --iso-publisher "Firefox OS personal build" \
+    --iso-volume "FIREFOXOS" \
+    --image-name live-image \
+    --memtest none \
+    --bootappend-live "boot=live components quiet splash hostname=firefoxos username=user user-fullname=Live locales=en_US.UTF-8 keyboard-layouts=us" \
+    --apt-recommends true \
+    --security true \
+    --updates true \
+    "${@}"

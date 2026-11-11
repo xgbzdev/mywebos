@@ -1,0 +1,227 @@
+#!/usr/bin/env python3
+"""Emulators: run Firefox OS (B2G) phone and TV editions on the desktop.
+
+Firefox OS ran on Gecko ("b2g") plus the Gaia UI. Mozilla published desktop
+builds of the b2g runtime (b2g-*.linux-x86_64.tar.bz2, later "Mulet"
+firefox-*.tar.bz2) that run Gaia in a window. This app imports such a runtime
+and a Gaia profile for each device type (phone / TV) and launches them at
+the right screen size.
+"""
+import json
+import os
+import shutil
+import subprocess
+import tarfile
+import threading
+
+import gi
+
+gi.require_version("Gtk", "3.0")
+from gi.repository import Gtk, GLib, Gdk  # noqa: E402
+
+BASE = os.path.expanduser("~/.local/share/firefoxos/emulators")
+SYSTEM_BASE = "/opt/firefoxos-emulators"     # optional: preinstalled at build time
+CONF = os.path.join(BASE, "devices.json")
+
+DEVICES = {
+    "phone": {"label": "Firefox OS Phone", "emoji": "📱", "screen": "320x480",
+              "sizes": ["320x480", "480x800", "540x960", "720x1280"]},
+    "tv":    {"label": "Firefox OS TV", "emoji": "📺", "screen": "1280x720",
+              "sizes": ["1280x720", "1920x1080"]},
+}
+
+L = {
+    "en": dict(title="Emulators", runtime="B2G runtime", none="Not installed",
+               imp_rt="Import runtime (.tar.bz2)…", get_rt="Get runtimes…",
+               profile="Gaia profile", imp_pr="Import Gaia profile folder…", start="Start",
+               screen="Screen", missing="Import a B2G runtime and a Gaia profile first.",
+               help="Get a b2g/Mulet desktop build (linux-x86_64) and a Gaia profile "
+                    "built with 'make' (phone) or 'GAIA_DEVICE_TYPE=tv make' (TV).",
+               working="Importing…", ok="Ready"),
+    "it": dict(title="Emulatori", runtime="Runtime B2G", none="Non installato",
+               imp_rt="Importa runtime (.tar.bz2)…", get_rt="Scarica runtime…",
+               profile="Profilo Gaia", imp_pr="Importa cartella profilo Gaia…", start="Avvia",
+               screen="Schermo", missing="Importa prima un runtime B2G e un profilo Gaia.",
+               help="Scarica una build desktop b2g/Mulet (linux-x86_64) e un profilo Gaia "
+                    "creato con 'make' (telefono) o 'GAIA_DEVICE_TYPE=tv make' (TV).",
+               working="Importazione…", ok="Pronto"),
+}
+S = L.get(os.environ.get("LANG", "en")[:2], L["en"])
+
+
+def load_conf():
+    try:
+        return json.load(open(CONF))
+    except Exception:
+        return {}
+
+
+def save_conf(c):
+    os.makedirs(BASE, exist_ok=True)
+    json.dump(c, open(CONF, "w"), indent=1)
+
+
+def find_runtime():
+    for root in (os.path.join(BASE, "runtime"), os.path.join(SYSTEM_BASE, "runtime")):
+        for name in ("b2g", "firefox"):        # b2g-desktop or Mulet
+            for dirpath, _dirs, files in os.walk(root):
+                if name in files and os.access(os.path.join(dirpath, name), os.X_OK):
+                    return os.path.join(dirpath, name)
+    return None
+
+
+def find_profile(dev):
+    for root in (os.path.join(BASE, "profiles", dev), os.path.join(SYSTEM_BASE, "profiles", dev)):
+        if os.path.isdir(root) and os.listdir(root):
+            return root
+    return None
+
+
+class Emu(Gtk.Window):
+    def __init__(self):
+        super().__init__(title=S["title"])
+        self.set_default_size(720, 460)
+        self.set_icon_name("phone")
+        prov = Gtk.CssProvider()
+        prov.load_from_data(b"""
+          .hero { background-image: linear-gradient(90deg,#ff9a1f,#e8481c); color:white; padding:14px 18px; font-size:16pt; }
+          .card { background:white; border:1px solid #ddd; border-radius:12px; padding:14px; }
+          .big { font-size: 40pt; }
+          .primary { background-image:none; background-color:#00a5d6; color:white; }
+          .dim { opacity:.65; font-size:9pt; }""")
+        Gtk.StyleContext.add_provider_for_screen(Gdk.Screen.get_default(), prov,
+                                                 Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
+        self.conf = load_conf()
+        self.box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
+        self.add(self.box)
+        self.render()
+
+    def render(self):
+        for c in self.box.get_children():
+            self.box.remove(c)
+        hero = Gtk.Label(label="🎮  " + S["title"], xalign=0)
+        hero.get_style_context().add_class("hero")
+        self.box.pack_start(hero, False, False, 0)
+
+        rt = find_runtime()
+        bar = Gtk.Box(spacing=8, margin=12)
+        bar.pack_start(Gtk.Label(label="%s: %s" % (S["runtime"], rt or S["none"]), xalign=0), True, True, 0)
+        get = Gtk.Button(label=S["get_rt"])
+        get.connect("clicked", lambda *_: subprocess.Popen(
+            ["firefox-esr", "https://archive.mozilla.org/pub/b2g/"]))
+        bar.pack_end(get, False, False, 0)
+        imp = Gtk.Button(label=S["imp_rt"])
+        imp.connect("clicked", self.import_runtime)
+        bar.pack_end(imp, False, False, 0)
+        self.box.pack_start(bar, False, False, 0)
+
+        row = Gtk.Box(spacing=12, margin=12, homogeneous=True)
+        for dev, info in DEVICES.items():
+            row.pack_start(self.device_card(dev, info, rt), True, True, 0)
+        self.box.pack_start(row, True, True, 0)
+
+        self.status = Gtk.Label(label=S["help"], wrap=True, xalign=0, margin=12)
+        self.status.get_style_context().add_class("dim")
+        self.box.pack_end(self.status, False, False, 0)
+        self.show_all()
+
+    def device_card(self, dev, info, rt):
+        c = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=8)
+        c.get_style_context().add_class("card")
+        big = Gtk.Label(label=info["emoji"])
+        big.get_style_context().add_class("big")
+        c.pack_start(big, False, False, 0)
+        c.pack_start(Gtk.Label(label=info["label"]), False, False, 0)
+        prof = find_profile(dev)
+        pl = Gtk.Label(label="%s: %s" % (S["profile"], "✓" if prof else S["none"]))
+        pl.get_style_context().add_class("dim")
+        c.pack_start(pl, False, False, 0)
+
+        sz = Gtk.Box(spacing=6)
+        sz.pack_start(Gtk.Label(label=S["screen"]), False, False, 0)
+        combo = Gtk.ComboBoxText()
+        for s in info["sizes"]:
+            combo.append(s, s)
+        combo.set_active_id(self.conf.get(dev, {}).get("screen", info["screen"]))
+        combo.connect("changed", lambda cb: self.set_conf(dev, "screen", cb.get_active_id()))
+        sz.pack_start(combo, True, True, 0)
+        c.pack_start(sz, False, False, 0)
+
+        ip = Gtk.Button(label=S["imp_pr"])
+        ip.connect("clicked", lambda *_: self.import_profile(dev))
+        c.pack_start(ip, False, False, 0)
+        st = Gtk.Button(label=S["start"])
+        st.get_style_context().add_class("primary")
+        st.set_sensitive(bool(rt and prof))
+        st.connect("clicked", lambda *_: self.start(dev, combo.get_active_id()))
+        c.pack_end(st, False, False, 0)
+        return c
+
+    def set_conf(self, dev, k, v):
+        self.conf.setdefault(dev, {})[k] = v
+        save_conf(self.conf)
+
+    def pick(self, title, action, filt=None):
+        dlg = Gtk.FileChooserDialog(title=title, transient_for=self, action=action)
+        dlg.add_buttons(Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL, Gtk.STOCK_OPEN, Gtk.ResponseType.OK)
+        if filt:
+            f = Gtk.FileFilter()
+            for p in filt:
+                f.add_pattern(p)
+            dlg.add_filter(f)
+        path = dlg.get_filename() if dlg.run() == Gtk.ResponseType.OK else None
+        dlg.destroy()
+        return path
+
+    def import_runtime(self, *_):
+        path = self.pick(S["imp_rt"], Gtk.FileChooserAction.OPEN, ["*.tar.bz2", "*.tar.gz", "*.tar.xz"])
+        if not path:
+            return
+        self.status.set_text(S["working"])
+        dest = os.path.join(BASE, "runtime")
+
+        def work():
+            try:
+                shutil.rmtree(dest, ignore_errors=True)
+                os.makedirs(dest)
+                with tarfile.open(path) as tf:
+                    tf.extractall(dest, filter="data")
+                for dirpath, _d, files in os.walk(dest):   # restore exec bits
+                    for n in files:
+                        if n in ("b2g", "b2g-bin", "firefox", "firefox-bin", "plugin-container"):
+                            os.chmod(os.path.join(dirpath, n), 0o755)
+                GLib.idle_add(self.render)
+            except Exception as e:
+                GLib.idle_add(self.status.set_text, str(e))
+        threading.Thread(target=work, daemon=True).start()
+
+    def import_profile(self, dev):
+        path = self.pick(S["imp_pr"], Gtk.FileChooserAction.SELECT_FOLDER)
+        if not path:
+            return
+        dest = os.path.join(BASE, "profiles", dev)
+        shutil.rmtree(dest, ignore_errors=True)
+        shutil.copytree(path, dest, symlinks=True)
+        self.render()
+
+    def start(self, dev, screen):
+        rt, prof = find_runtime(), find_profile(dev)
+        if not (rt and prof):
+            self.status.set_text(S["missing"])
+            return
+        # Run on a throw-away copy so the imported profile stays clean.
+        run_prof = os.path.join(BASE, "run", dev)
+        if not os.path.isdir(run_prof):
+            shutil.copytree(prof, run_prof, symlinks=True)
+        env = dict(os.environ, MOZ_NO_REMOTE="1", GDK_BACKEND="x11")
+        cmd = [rt, "-profile", run_prof, "--screen=%s" % screen, "-no-remote"]
+        if os.path.basename(rt) == "firefox":          # Mulet
+            cmd += ["-chrome", "chrome://b2g/content/shell.html"]
+        subprocess.Popen(cmd, env=env, cwd=os.path.dirname(rt), start_new_session=True)
+        self.status.set_text("%s %s (%s)" % (S["ok"], DEVICES[dev]["label"], screen))
+
+
+if __name__ == "__main__":
+    w = Emu()
+    w.connect("destroy", Gtk.main_quit)
+    Gtk.main()

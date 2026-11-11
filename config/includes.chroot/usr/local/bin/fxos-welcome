@@ -1,0 +1,289 @@
+#!/usr/bin/env python3
+"""Firefox OS welcome wizard: language, keyboard, network, apps, try-or-install."""
+import os
+import subprocess
+import gi
+
+gi.require_version("Gtk", "3.0")
+from gi.repository import Gtk, Gdk  # noqa: E402
+
+HOME = os.path.expanduser("~")
+STATE = os.path.join(HOME, ".config", "firefoxos")
+DONE_FLAG = os.path.join(STATE, "welcome-done")
+LIVE = "boot=live" in open("/proc/cmdline").read()
+
+LANGS = [
+    ("en", "English", "en_US.UTF-8", "us"),
+    ("it", "Italiano", "it_IT.UTF-8", "it"),
+    ("el", "Ελληνικά", "el_GR.UTF-8", "gr"),
+    ("es", "Español", "es_ES.UTF-8", "es"),
+    ("fr", "Français", "fr_FR.UTF-8", "fr"),
+    ("de", "Deutsch", "de_DE.UTF-8", "de"),
+    ("pt", "Português", "pt_PT.UTF-8", "pt"),
+    ("pl", "Polski", "pl_PL.UTF-8", "pl"),
+]
+KEYBOARDS = [("us", "English (US)"), ("gb", "English (UK)"), ("it", "Italiano"),
+             ("gr", "Ελληνικά"), ("es", "Español"), ("fr", "Français"),
+             ("de", "Deutsch"), ("pt", "Português"), ("br", "Português (Brasil)"),
+             ("pl", "Polski"), ("ch", "Schweiz"), ("latam", "Latinoamérica")]
+
+T = {
+ "en": ["Welcome! Choose your language", "You can change it later in Settings.",
+        "Keyboard layout", "Type here to test your keyboard", "Connect to the internet",
+        "Needed for Marketplace, Flathub and the web.", "Open network settings",
+        "Your apps", "Marketplace installs Firefox OS web apps and Linux apps. Emulators runs Firefox OS phone & TV.",
+        "Open Marketplace", "Open Emulators", "All set!", "A few tips to get started:",
+        "Press the Super (Windows) key to open the Start menu.\nDrag a window to the screen edge to snap it; to the top to maximize it.\nInstall more apps from Marketplace.",
+        "Keep trying", "Install Firefox OS", "Next ›", "‹ Back", "Step {} of 5", "Finish",
+        "Language changes apply after you log out and back in. Log out now?"],
+ "it": ["Benvenuto! Scegli la lingua", "Puoi cambiarla in seguito nelle Impostazioni.",
+        "Layout della tastiera", "Scrivi qui per provare la tastiera", "Connettiti a internet",
+        "Serve per Marketplace, Flathub e il web.", "Apri impostazioni di rete",
+        "Le tue app", "Marketplace installa web app di Firefox OS e app Linux. Emulatori avvia Firefox OS telefono e TV.",
+        "Apri Marketplace", "Apri Emulatori", "Tutto pronto!", "Qualche consiglio per iniziare:",
+        "Premi il tasto Super (Windows) per aprire il menu Start.\nTrascina una finestra al bordo per affiancarla; in alto per ingrandirla.\nInstalla altre app dal Marketplace.",
+        "Continua a provare", "Installa Firefox OS", "Avanti ›", "‹ Indietro", "Passo {} di 5", "Fine",
+        "La lingua cambierà dopo un nuovo accesso. Uscire ora?"],
+ "el": ["Καλώς ήρθατε! Επιλέξτε γλώσσα", "Μπορείτε να την αλλάξετε αργότερα.",
+        "Διάταξη πληκτρολογίου", "Πληκτρολογήστε εδώ για δοκιμή", "Σύνδεση στο διαδίκτυο",
+        "Απαιτείται για Marketplace, Flathub και web.", "Ρυθμίσεις δικτύου",
+        "Οι εφαρμογές σας", "Το Marketplace εγκαθιστά web και Linux εφαρμογές. Οι Εξομοιωτές τρέχουν Firefox OS κινητό & TV.",
+        "Άνοιγμα Marketplace", "Άνοιγμα Εξομοιωτών", "Έτοιμο!", "Μερικές συμβουλές:",
+        "Πατήστε Super (Windows) για το μενού Έναρξη.\nΣύρετε ένα παράθυρο στην άκρη για προσκόλληση.\nΕγκαταστήστε εφαρμογές από το Marketplace.",
+        "Συνέχεια δοκιμής", "Εγκατάσταση Firefox OS", "Επόμενο ›", "‹ Πίσω", "Βήμα {} από 5", "Τέλος",
+        "Η γλώσσα αλλάζει μετά από νέα σύνδεση. Αποσύνδεση τώρα;"],
+ "es": ["¡Bienvenido! Elige tu idioma", "Puedes cambiarlo luego en Ajustes.",
+        "Distribución del teclado", "Escribe aquí para probar el teclado", "Conéctate a internet",
+        "Necesario para Marketplace, Flathub y la web.", "Abrir ajustes de red",
+        "Tus apps", "Marketplace instala apps web de Firefox OS y apps de Linux. Emuladores ejecuta Firefox OS teléfono y TV.",
+        "Abrir Marketplace", "Abrir Emuladores", "¡Listo!", "Algunos consejos:",
+        "Pulsa la tecla Super (Windows) para abrir el menú Inicio.\nArrastra una ventana al borde para ajustarla; arriba para maximizarla.\nInstala más apps desde Marketplace.",
+        "Seguir probando", "Instalar Firefox OS", "Siguiente ›", "‹ Atrás", "Paso {} de 5", "Terminar",
+        "El idioma cambia al volver a iniciar sesión. ¿Cerrar sesión ahora?"],
+ "fr": ["Bienvenue ! Choisissez votre langue", "Modifiable plus tard dans les Paramètres.",
+        "Disposition du clavier", "Tapez ici pour tester le clavier", "Connexion à internet",
+        "Nécessaire pour Marketplace, Flathub et le web.", "Paramètres réseau",
+        "Vos applis", "Marketplace installe des applis web Firefox OS et Linux. Émulateurs lance Firefox OS téléphone et TV.",
+        "Ouvrir Marketplace", "Ouvrir Émulateurs", "C'est prêt !", "Quelques astuces :",
+        "Appuyez sur Super (Windows) pour ouvrir le menu Démarrer.\nGlissez une fenêtre au bord pour l'ancrer ; en haut pour l'agrandir.\nInstallez des applis depuis Marketplace.",
+        "Continuer l'essai", "Installer Firefox OS", "Suivant ›", "‹ Retour", "Étape {} sur 5", "Terminer",
+        "La langue change après reconnexion. Se déconnecter maintenant ?"],
+ "de": ["Willkommen! Sprache wählen", "Später in den Einstellungen änderbar.",
+        "Tastaturbelegung", "Hier tippen, um die Tastatur zu testen", "Mit dem Internet verbinden",
+        "Nötig für Marketplace, Flathub und das Web.", "Netzwerkeinstellungen",
+        "Deine Apps", "Marketplace installiert Firefox-OS-Web-Apps und Linux-Apps. Emulatoren startet Firefox OS Handy & TV.",
+        "Marketplace öffnen", "Emulatoren öffnen", "Fertig!", "Ein paar Tipps:",
+        "Drücke Super (Windows), um das Startmenü zu öffnen.\nZiehe ein Fenster an den Rand zum Andocken; nach oben zum Maximieren.\nWeitere Apps gibt es im Marketplace.",
+        "Weiter testen", "Firefox OS installieren", "Weiter ›", "‹ Zurück", "Schritt {} von 5", "Fertig",
+        "Die Sprache gilt nach erneuter Anmeldung. Jetzt abmelden?"],
+ "pt": ["Bem-vindo! Escolha o idioma", "Pode alterá-lo depois nas Definições.",
+        "Esquema do teclado", "Escreva aqui para testar o teclado", "Ligar à internet",
+        "Necessário para Marketplace, Flathub e a web.", "Definições de rede",
+        "As suas apps", "O Marketplace instala apps web do Firefox OS e apps Linux. Emuladores executa Firefox OS telemóvel e TV.",
+        "Abrir Marketplace", "Abrir Emuladores", "Tudo pronto!", "Algumas dicas:",
+        "Prima Super (Windows) para abrir o menu Iniciar.\nArraste uma janela para a margem para a encaixar; para cima para maximizar.\nInstale mais apps no Marketplace.",
+        "Continuar a experimentar", "Instalar Firefox OS", "Seguinte ›", "‹ Voltar", "Passo {} de 5", "Concluir",
+        "O idioma muda após nova sessão. Terminar sessão agora?"],
+ "pl": ["Witaj! Wybierz język", "Możesz go później zmienić w Ustawieniach.",
+        "Układ klawiatury", "Pisz tutaj, aby sprawdzić klawiaturę", "Połącz z internetem",
+        "Potrzebne do Marketplace, Flathub i sieci.", "Ustawienia sieci",
+        "Twoje aplikacje", "Marketplace instaluje aplikacje webowe Firefox OS i aplikacje Linux. Emulatory uruchamiają Firefox OS telefon i TV.",
+        "Otwórz Marketplace", "Otwórz Emulatory", "Gotowe!", "Kilka wskazówek:",
+        "Naciśnij Super (Windows), aby otworzyć menu Start.\nPrzeciągnij okno do krawędzi, aby je przypiąć; na górę, aby zmaksymalizować.\nInstaluj aplikacje z Marketplace.",
+        "Testuj dalej", "Zainstaluj Firefox OS", "Dalej ›", "‹ Wstecz", "Krok {} z 5", "Zakończ",
+        "Język zmieni się po ponownym zalogowaniu. Wylogować teraz?"],
+}
+
+CSS = b"""
+.header { background-image: linear-gradient(90deg, #ff9a1f, #e8481c); color: white; padding: 18px 22px; }
+.header .step { font-size: 9pt; opacity: .9; }
+.header .title { font-size: 17pt; }
+.header .sub { font-size: 10pt; opacity: .95; }
+.lang-btn { min-width: 150px; min-height: 34px; }
+.lang-btn:checked { background: #e3f6fc; border-color: #00a5d6; }
+.primary { background-image: none; background-color: #00a5d6; color: white; border-color: #0095c2; }
+.footer { background: #f4f4f4; padding: 10px 18px; }
+"""
+
+
+def run(*cmd):
+    try:
+        subprocess.Popen(cmd, start_new_session=True)
+    except FileNotFoundError:
+        pass
+
+
+class Welcome(Gtk.Window):
+    def __init__(self):
+        super().__init__(title="Firefox OS")
+        self.set_default_size(560, 330)
+        self.set_position(Gtk.WindowPosition.CENTER)
+        self.set_icon_from_file("/usr/share/firefoxos/icons/firefoxos.svg") \
+            if os.path.exists("/usr/share/firefoxos/icons/firefoxos.svg") else None
+        prov = Gtk.CssProvider()
+        prov.load_from_data(CSS)
+        Gtk.StyleContext.add_provider_for_screen(Gdk.Screen.get_default(), prov,
+                                                 Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
+        env = os.environ.get("LANG", "en")[:2]
+        self.lang = env if env in T else "en"
+        self.start_lang = self.lang
+        self.kbd = next((k for c, _, _, k in LANGS if c == self.lang), "us")
+        self.step = 0
+        self.root = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
+        self.add(self.root)
+        self.render()
+
+    def t(self, i):
+        return T[self.lang][i]
+
+    # ---- layout ----
+    def render(self):
+        for c in self.root.get_children():
+            self.root.remove(c)
+        titles = [(0, 1), (4, 5), (4, 5), (7, 8), (11, 12)]
+        ti, si = titles[self.step]
+        title = self.t(2) if self.step == 1 else self.t(ti)
+        sub = self.t(3) if self.step == 1 else self.t(si)
+        if self.step == 3:
+            sub = ""
+
+        head = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=2)
+        head.get_style_context().add_class("header")
+        for txt, cls in ((self.t(18).format(self.step + 1), "step"), (title, "title"), (sub, "sub")):
+            lb = Gtk.Label(label=txt, xalign=0)
+            lb.get_style_context().add_class(cls)
+            head.pack_start(lb, False, False, 0)
+        self.root.pack_start(head, False, False, 0)
+
+        body = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=10, margin=18)
+        getattr(self, "page%d" % self.step)(body)
+        self.root.pack_start(body, True, True, 0)
+
+        foot = Gtk.Box(spacing=8)
+        foot.get_style_context().add_class("footer")
+        if self.step > 0:
+            back = Gtk.Button(label=self.t(17))
+            back.connect("clicked", lambda *_: self.go(-1))
+            foot.pack_start(back, False, False, 0)
+        dots = Gtk.Label(label=" ".join("●" if i == self.step else "○" for i in range(5)))
+        foot.set_center_widget(dots)
+        if self.step < 4:
+            nxt = Gtk.Button(label=self.t(16))
+            nxt.get_style_context().add_class("primary")
+            nxt.connect("clicked", lambda *_: self.go(1))
+            foot.pack_end(nxt, False, False, 0)
+        self.root.pack_end(foot, False, False, 0)
+        self.show_all()
+
+    def go(self, d):
+        self.step = max(0, min(4, self.step + d))
+        self.render()
+
+    # ---- pages ----
+    def page0(self, box):
+        grid = Gtk.Grid(column_spacing=8, row_spacing=8)
+        group = None
+        for i, (code, name, _, _) in enumerate(LANGS):
+            b = Gtk.RadioButton.new_with_label_from_widget(group, name)
+            group = group or b
+            b.set_mode(False)
+            b.get_style_context().add_class("lang-btn")
+            b.set_active(code == self.lang)
+            b.connect("toggled", self.on_lang, code)
+            grid.attach(b, i % 3, i // 3, 1, 1)
+        box.pack_start(grid, False, False, 0)
+
+    def on_lang(self, btn, code):
+        if not btn.get_active():
+            return
+        self.lang = code
+        self.kbd = next(k for c, _, _, k in LANGS if c == code)
+        self.apply_keyboard()
+        self.render()
+
+    def page1(self, box):
+        combo = Gtk.ComboBoxText()
+        for code, name in KEYBOARDS:
+            combo.append(code, name)
+        combo.set_active_id(self.kbd)
+        combo.connect("changed", lambda c: (setattr(self, "kbd", c.get_active_id()),
+                                            self.apply_keyboard()))
+        box.pack_start(combo, False, False, 0)
+        box.pack_start(Gtk.Entry(placeholder_text=self.t(3)), False, False, 0)
+
+    def page2(self, box):
+        b = Gtk.Button(label=self.t(6))
+        b.connect("clicked", lambda *_: run("nm-connection-editor"))
+        box.pack_start(b, False, False, 0)
+
+    def page3(self, box):
+        lb = Gtk.Label(label=self.t(8), xalign=0, wrap=True)
+        box.pack_start(lb, False, False, 0)
+        row = Gtk.Box(spacing=8)
+        for txt, cmd in ((self.t(9), "fxos-marketplace"), (self.t(10), "fxos-emulators")):
+            b = Gtk.Button(label=txt)
+            b.connect("clicked", lambda _b, c=cmd: run(c))
+            row.pack_start(b, False, False, 0)
+        box.pack_start(row, False, False, 0)
+
+    def page4(self, box):
+        tips = Gtk.Label(label="\n".join("•  " + l for l in self.t(13).split("\n")),
+                         xalign=0, wrap=True)
+        box.pack_start(tips, False, False, 0)
+        row = Gtk.Box(spacing=10, halign=Gtk.Align.CENTER)
+        keep = Gtk.Button(label=self.t(14) if LIVE else self.t(19))
+        keep.connect("clicked", lambda *_: self.finish(False))
+        row.pack_start(keep, False, False, 0)
+        if LIVE:
+            inst = Gtk.Button(label=self.t(15))
+            inst.get_style_context().add_class("primary")
+            inst.connect("clicked", lambda *_: self.finish(True))
+            row.pack_start(inst, False, False, 0)
+        box.pack_start(row, False, False, 12)
+
+    # ---- actions ----
+    def apply_keyboard(self):
+        run("setxkbmap", self.kbd)
+        os.makedirs(STATE, exist_ok=True)
+        with open(os.path.join(STATE, "keyboard"), "w") as f:
+            f.write(self.kbd)
+
+    def save_language(self):
+        loc = next(l for c, _, l, _ in LANGS if c == self.lang)
+        # ~/.xsessionrc is read by Debian's Xsession on every login.
+        rc = os.path.join(HOME, ".xsessionrc")
+        lines = []
+        if os.path.exists(rc):
+            lines = [l for l in open(rc) if "# fxos-lang" not in l and "# fxos-kbd" not in l]
+        lines.append('export LANG=%s LANGUAGE=%s  # fxos-lang\n' % (loc, self.lang))
+        lines.append('setxkbmap %s 2>/dev/null  # fxos-kbd\n' % self.kbd)
+        with open(rc, "w") as f:
+            f.writelines(lines)
+        # Installed systems: also tell AccountsService (used by LightDM).
+        run("dbus-send", "--system", "--print-reply", "--dest=org.freedesktop.Accounts",
+            "/org/freedesktop/Accounts/User%d" % os.getuid(),
+            "org.freedesktop.Accounts.User.SetLanguage", "string:" + loc)
+
+    def finish(self, install):
+        os.makedirs(STATE, exist_ok=True)
+        open(DONE_FLAG, "w").close()
+        self.save_language()
+        if install:
+            run("fxos-install")
+        elif self.lang != self.start_lang:
+            dlg = Gtk.MessageDialog(transient_for=self, buttons=Gtk.ButtonsType.YES_NO,
+                                    message_type=Gtk.MessageType.QUESTION, text=self.t(20))
+            if dlg.run() == Gtk.ResponseType.YES:
+                run("xfce4-session-logout", "--logout", "--fast")
+            dlg.destroy()
+        Gtk.main_quit()
+
+
+if __name__ == "__main__":
+    import sys
+    # Live RAM home is wiped on reboot, so the wizard shows on every fresh live boot.
+    if "--autostart" in sys.argv and os.path.exists(DONE_FLAG):
+        sys.exit(0)
+    w = Welcome()
+    w.connect("destroy", Gtk.main_quit)
+    Gtk.main()

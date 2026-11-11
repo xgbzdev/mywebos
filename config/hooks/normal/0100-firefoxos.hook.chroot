@@ -1,0 +1,83 @@
+#!/bin/sh
+# Runs inside the image while it is being built.
+set -e
+
+# ---- Identity -------------------------------------------------------------
+cat > /etc/os-release <<'EOF'
+PRETTY_NAME="Firefox OS (personal edition)"
+NAME="Firefox OS"
+VERSION_ID="2.0"
+VERSION="2.0 (based on Debian 13)"
+ID=firefoxos
+ID_LIKE=debian
+HOME_URL="https://www.mozilla.org/firefox/"
+EOF
+echo "firefoxos" > /etc/hostname
+echo "Firefox OS 2.0 \n \l" > /etc/issue
+
+# ---- Flathub for Linux apps -------------------------------------------------
+flatpak remote-add --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo || true
+
+# ---- Default look: wallpaper, icons, LightDM greeter ------------------------
+mkdir -p /etc/lightdm/lightdm-gtk-greeter.conf.d
+cat > /etc/lightdm/lightdm-gtk-greeter.conf.d/50-firefoxos.conf <<'EOF'
+[greeter]
+background=/usr/share/firefoxos/wallpapers/default.svg
+theme-name=Adwaita
+icon-theme-name=Papirus
+font-name=Noto Sans 11
+clock-format=%H:%M  %A, %B %d
+indicators=~host;~spacer;~clock;~spacer;~language;~a11y;~power
+EOF
+
+# ---- Calamares installer branding -----------------------------------------
+B=/etc/calamares/branding/debian/branding.desc
+if [ -f "$B" ]; then
+    sed -i \
+      -e 's/^\(\s*productName:\).*/\1 "Firefox OS"/' \
+      -e 's/^\(\s*shortProductName:\).*/\1 "Firefox OS"/' \
+      -e 's/^\(\s*version:\).*/\1 "2.0"/' \
+      -e 's/^\(\s*shortVersion:\).*/\1 "2.0"/' \
+      -e 's/^\(\s*versionedName:\).*/\1 "Firefox OS 2.0"/' \
+      -e 's/^\(\s*shortVersionedName:\).*/\1 "Firefox OS 2.0"/' \
+      -e 's/^\(\s*bootloaderEntryName:\).*/\1 "FirefoxOS"/' \
+      -e 's/^\(\s*sidebarBackground:\).*/\1 "#e8571c"/' \
+      "$B"
+    cp /usr/share/firefoxos/icons/firefoxos.svg /etc/calamares/branding/debian/firefoxos-logo.svg || true
+fi
+# The welcome wizard / Install icon launch Calamares through this wrapper
+cat > /usr/local/bin/fxos-install <<'EOF'
+#!/bin/sh
+if command -v install-debian >/dev/null 2>&1; then exec install-debian; fi
+exec pkexec calamares
+EOF
+chmod 755 /usr/local/bin/fxos-install
+
+# ---- GRUB name on installed systems ------------------------------------------
+if [ -f /etc/default/grub ]; then
+    sed -i 's/^GRUB_DISTRIBUTOR=.*/GRUB_DISTRIBUTOR="Firefox OS"/' /etc/default/grub
+fi
+
+# ---- Hide duplicate launchers so the Start menu matches Firefox OS -------------
+for f in xfce4-mail-reader xfce4-web-browser xfce4-file-manager xfce4-terminal-emulator \
+         xfce4-run xfce-backdrop-settings debian-xterm debian-uxterm; do
+    [ -f /usr/share/applications/$f.desktop ] && \
+        echo "NoDisplay=true" >> /usr/share/applications/$f.desktop || true
+done
+
+# ---- Firefox defaults -------------------------------------------------------
+mkdir -p /etc/firefox/policies
+cat > /etc/firefox/policies/policies.json <<'EOF'
+{
+  "policies": {
+    "DontCheckDefaultBrowser": true,
+    "OverrideFirstRunPage": "",
+    "Preferences": {
+      "intl.locale.requested": { "Value": "", "Status": "default" }
+    }
+  }
+}
+EOF
+
+chmod 755 /usr/local/bin/fxos-* || true
+update-desktop-database /usr/share/applications || true

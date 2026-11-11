@@ -1,0 +1,29 @@
+{
+  "webapps": [
+    {"id": "excalidraw", "name": "Excalidraw", "category": "Productivity", "color": "#6965db", "url": "https://excalidraw.com", "desc": "Hand-drawn style whiteboard."},
+    {"id": "wikipedia", "name": "Wikipedia", "category": "Reference", "color": "#555555", "url": "https://m.wikipedia.org", "desc": "The free encyclopedia."},
+    {"id": "openstreetmap", "name": "OpenStreetMap", "category": "Maps", "color": "#7ebc6f", "url": "https://www.openstreetmap.org", "desc": "Community-made world map."},
+    {"id": "duckduckgo", "name": "DuckDuckGo", "category": "Search", "color": "#de5833", "url": "https://duckduckgo.com", "desc": "Private web search."},
+    {"id": "youtube", "name": "YouTube", "category": "Video", "color": "#ff0000", "url": "https://m.youtube.com", "desc": "Watch videos."},
+    {"id": "photopea", "name": "Photopea", "category": "Graphics", "color": "#18a497", "url": "https://www.photopea.com", "desc": "Online photo editor."},
+    {"id": "squoosh", "name": "Squoosh", "category": "Graphics", "color": "#ff3385", "url": "https://squoosh.app", "desc": "Compress and resize images."},
+    {"id": "2048", "name": "2048", "category": "Games", "color": "#edc22e", "url": "https://play2048.co", "desc": "Sliding tile puzzle."},
+    {"id": "proton-mail", "name": "Proton Mail", "category": "Communication", "color": "#6d4aff", "url": "https://mail.proton.me", "desc": "Encrypted e-mail."},
+    {"id": "element", "name": "Element", "category": "Communication", "color": "#0dbd8b", "url": "https://app.element.io", "desc": "Matrix chat."},
+    {"id": "radiogarden", "name": "Radio Garden", "category": "Music", "color": "#2a9d55", "url": "https://radio.garden", "desc": "Live radio from around the globe."},
+    {"id": "translate", "name": "LibreTranslate", "category": "Reference", "color": "#1565c0", "url": "https://libretranslate.com", "desc": "Free and open translation."},
+    {"id": "drawio", "name": "draw.io", "category": "Productivity", "color": "#f08705", "url": "https://app.diagrams.net", "desc": "Diagrams and flowcharts."}
+  ],
+  "linux_featured": [
+    {"id": "org.libreoffice.LibreOffice", "name": "LibreOffice", "desc": "Office suite."},
+    {"id": "org.gimp.GIMP", "name": "GIMP", "desc": "Image editor."},
+    {"id": "org.videolan.VLC", "name": "VLC", "desc": "Plays everything."},
+    {"id": "com.obsproject.Studio", "name": "OBS Studio", "desc": "Record and stream."},
+    {"id": "org.inkscape.Inkscape", "name": "Inkscape", "desc": "Vector graphics."},
+    {"id": "org.kde.kdenlive", "name": "Kdenlive", "desc": "Video editor."},
+    {"id": "com.valvesoftware.Steam", "name": "Steam", "desc": "Games store."},
+    {"id": "org.telegram.desktop", "name": "Telegram", "desc": "Messaging."},
+    {"id": "com.spotify.Client", "name": "Spotify", "desc": "Music streaming."},
+    {"id": "org.blender.Blender", "name": "Blender", "desc": "3D creation suite."}
+  ]
+}

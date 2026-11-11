@@ -1,0 +1,21 @@
+#!/bin/sh
+# Run an installed Firefox OS web app in its own Firefox window/profile.
+# Usage: fxos-webapp <id> <url>
+ID="$1"; URL="$2"
+[ -z "$ID" ] || [ -z "$URL" ] && { echo "usage: fxos-webapp <id> <url>" >&2; exit 1; }
+PROFILE="$HOME/.local/share/firefoxos/webapps/$ID"
+if [ ! -d "$PROFILE" ]; then
+    mkdir -p "$PROFILE/chrome"
+    # App-like window: hide tabs and toolbars.
+    cat > "$PROFILE/user.js" <<'EOF'
+user_pref("toolkit.legacyUserProfileCustomizations.stylesheets", true);
+user_pref("browser.shell.checkDefaultBrowser", false);
+user_pref("browser.startup.homepage_override.mstone", "ignore");
+user_pref("datareporting.policy.dataSubmissionPolicyBypassNotification", true);
+user_pref("browser.tabs.inTitlebar", 0);
+EOF
+    cat > "$PROFILE/chrome/userChrome.css" <<'EOF'
+#TabsToolbar, #nav-bar, #PersonalToolbar, #sidebar-box { visibility: collapse !important; }
+EOF
+fi
+exec firefox-esr --no-remote --class "fxos-$ID" --name "fxos-$ID" --profile "$PROFILE" "$URL"

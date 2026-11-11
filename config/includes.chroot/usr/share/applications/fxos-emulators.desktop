@@ -1,0 +1,15 @@
+[Desktop Entry]
+Type=Application
+Name=Emulators
+Name[it]=Emulatori
+Name[el]=Εξομοιωτές
+Name[es]=Emuladores
+Name[fr]=Émulateurs
+Name[de]=Emulatoren
+Name[pt]=Emuladores
+Name[pl]=Emulatory
+Comment=Run Firefox OS phone and TV (B2G)
+Exec=fxos-emulators
+Icon=phone
+Categories=Development;Emulator;
+Terminal=false

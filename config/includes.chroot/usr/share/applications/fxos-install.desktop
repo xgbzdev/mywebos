@@ -1,0 +1,16 @@
+[Desktop Entry]
+Type=Application
+Name=Install Firefox OS
+Name[it]=Installa Firefox OS
+Name[es]=Instalar Firefox OS
+Name[fr]=Installer Firefox OS
+Name[de]=Firefox OS installieren
+Name[el]=Εγκατάσταση Firefox OS
+Name[pt]=Instalar Firefox OS
+Name[pl]=Zainstaluj Firefox OS
+Comment=Install Firefox OS on this computer
+Exec=fxos-install
+Icon=system-software-install
+Categories=System;
+Terminal=false
+NoDisplay=true

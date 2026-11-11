@@ -1,0 +1,18 @@
+#!/bin/sh
+# Per-login setup: live desktop icons, saved keyboard, welcome wizard.
+KB="$HOME/.config/firefoxos/keyboard"
+[ -f "$KB" ] && setxkbmap "$(cat "$KB")"
+DESK=$(xdg-user-dir DESKTOP 2>/dev/null || echo "$HOME/Desktop")
+mkdir -p "$DESK"
+if grep -q "boot=live" /proc/cmdline; then
+    for f in fxos-install; do
+        cp /usr/share/applications/$f.desktop "$DESK/" && sed -i '/^NoDisplay/d' "$DESK/$f.desktop"
+        chmod +x "$DESK/$f.desktop"
+        gio set "$DESK/$f.desktop" metadata::trusted true 2>/dev/null || true
+    done
+fi
+for f in thunar firefox-esr fxos-marketplace; do
+    [ -f "$DESK/$f.desktop" ] || { cp /usr/share/applications/$f.desktop "$DESK/" 2>/dev/null && chmod +x "$DESK/$f.desktop"; }
+done
+sleep 2
+exec fxos-welcome --autostart

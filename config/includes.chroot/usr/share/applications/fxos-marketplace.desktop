@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Application
+Name=Marketplace
+Name[it]=Marketplace
+Name[el]=Marketplace
+Comment=Install Firefox OS web apps and Linux apps
+Exec=fxos-marketplace
+Icon=system-software-install
+Categories=System;PackageManager;
+Terminal=false

@@ -1,0 +1,6 @@
+[Desktop Entry]
+Type=Application
+Name=Firefox OS session setup
+Exec=fxos-session
+NoDisplay=true
+X-GNOME-Autostart-Phase=Applications

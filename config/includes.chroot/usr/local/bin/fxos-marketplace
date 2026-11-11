@@ -1,0 +1,320 @@
+#!/usr/bin/env python3
+"""Firefox OS Marketplace: install Firefox OS web apps and Linux apps (Flathub)."""
+import json
+import os
+import subprocess
+import threading
+from xml.sax.saxutils import escape
+
+import gi
+
+gi.require_version("Gtk", "3.0")
+from gi.repository import Gtk, GLib, Gdk  # noqa: E402
+
+CATALOG = "/usr/share/firefoxos/marketplace/catalog.json"
+HOME = os.path.expanduser("~")
+APPS_DIR = os.path.join(HOME, ".local/share/applications")
+ICON_DIR = os.path.join(HOME, ".local/share/firefoxos/icons")
+USER_CATALOG = os.path.join(HOME, ".local/share/firefoxos/my-webapps.json")
+
+L = {
+    "en": dict(title="Marketplace", web="Firefox OS apps", linux="Linux apps", installed="Installed",
+               install="Install", remove="Remove", open="Open", search="Search Flathub…",
+               add="Add any website as an app", name="Name", url="Address (https://…)",
+               more="More Linux apps (GNOME Software)", working="Working…", done="Installed",
+               fail="Failed – check your internet connection"),
+    "it": dict(title="Marketplace", web="App Firefox OS", linux="App Linux", installed="Installate",
+               install="Installa", remove="Rimuovi", open="Apri", search="Cerca su Flathub…",
+               add="Aggiungi un sito come app", name="Nome", url="Indirizzo (https://…)",
+               more="Altre app Linux (GNOME Software)", working="Attendi…", done="Installata",
+               fail="Errore – controlla la connessione"),
+    "es": dict(title="Marketplace", web="Apps de Firefox OS", linux="Apps de Linux", installed="Instaladas",
+               install="Instalar", remove="Quitar", open="Abrir", search="Buscar en Flathub…",
+               add="Añadir una web como app", name="Nombre", url="Dirección (https://…)",
+               more="Más apps de Linux (GNOME Software)", working="Trabajando…", done="Instalada",
+               fail="Error: revisa la conexión"),
+    "fr": dict(title="Marketplace", web="Applis Firefox OS", linux="Applis Linux", installed="Installées",
+               install="Installer", remove="Supprimer", open="Ouvrir", search="Rechercher sur Flathub…",
+               add="Ajouter un site comme appli", name="Nom", url="Adresse (https://…)",
+               more="Plus d'applis Linux (GNOME Logiciels)", working="En cours…", done="Installée",
+               fail="Échec : vérifiez la connexion"),
+    "de": dict(title="Marketplace", web="Firefox-OS-Apps", linux="Linux-Apps", installed="Installiert",
+               install="Installieren", remove="Entfernen", open="Öffnen", search="Flathub durchsuchen…",
+               add="Webseite als App hinzufügen", name="Name", url="Adresse (https://…)",
+               more="Weitere Linux-Apps (GNOME Software)", working="Bitte warten…", done="Installiert",
+               fail="Fehler – Internetverbindung prüfen"),
+    "el": dict(title="Marketplace", web="Εφαρμογές Firefox OS", linux="Εφαρμογές Linux", installed="Εγκατεστημένες",
+               install="Εγκατάσταση", remove="Αφαίρεση", open="Άνοιγμα", search="Αναζήτηση στο Flathub…",
+               add="Προσθήκη ιστότοπου ως εφαρμογή", name="Όνομα", url="Διεύθυνση (https://…)",
+               more="Περισσότερες εφαρμογές Linux", working="Παρακαλώ περιμένετε…", done="Εγκαταστάθηκε",
+               fail="Σφάλμα – ελέγξτε τη σύνδεση"),
+    "pt": dict(title="Marketplace", web="Apps Firefox OS", linux="Apps Linux", installed="Instaladas",
+               install="Instalar", remove="Remover", open="Abrir", search="Pesquisar no Flathub…",
+               add="Adicionar um site como app", name="Nome", url="Endereço (https://…)",
+               more="Mais apps Linux (GNOME Software)", working="A trabalhar…", done="Instalada",
+               fail="Falhou – verifique a ligação"),
+    "pl": dict(title="Marketplace", web="Aplikacje Firefox OS", linux="Aplikacje Linux", installed="Zainstalowane",
+               install="Zainstaluj", remove="Usuń", open="Otwórz", search="Szukaj we Flathub…",
+               add="Dodaj stronę jako aplikację", name="Nazwa", url="Adres (https://…)",
+               more="Więcej aplikacji Linux (GNOME Software)", working="Proszę czekać…", done="Zainstalowano",
+               fail="Błąd – sprawdź połączenie"),
+}
+S = L.get(os.environ.get("LANG", "en")[:2], L["en"])
+
+CSS = b"""
+.hero { background-image: linear-gradient(90deg, #ff9a1f, #e8481c); color: white; padding: 14px 18px; font-size: 16pt; }
+.card { background: white; border: 1px solid #e2e2e2; border-radius: 10px; padding: 10px; }
+.appname { font-weight: bold; }
+.dim { opacity: .65; font-size: 9pt; }
+.primary { background-image: none; background-color: #00a5d6; color: white; }
+"""
+
+
+def load_catalog():
+    with open(CATALOG) as f:
+        cat = json.load(f)
+    if os.path.exists(USER_CATALOG):
+        try:
+            cat["webapps"] += json.load(open(USER_CATALOG))
+        except Exception:
+            pass
+    return cat
+
+
+def icon_svg(app):
+    letter = escape(app["name"][:1].upper())
+    return ('<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128">'
+            '<circle cx="64" cy="64" r="60" fill="%s"/>'
+            '<text x="64" y="84" font-family="Noto Sans" font-size="60" font-weight="bold" '
+            'fill="white" text-anchor="middle">%s</text></svg>') % (app.get("color", "#e8571c"), letter)
+
+
+def desktop_path(app_id):
+    return os.path.join(APPS_DIR, "fxos-webapp-%s.desktop" % app_id)
+
+
+def is_web_installed(app_id):
+    return os.path.exists(desktop_path(app_id))
+
+
+def install_web(app):
+    os.makedirs(APPS_DIR, exist_ok=True)
+    os.makedirs(ICON_DIR, exist_ok=True)
+    icon = os.path.join(ICON_DIR, app["id"] + ".svg")
+    with open(icon, "w") as f:
+        f.write(icon_svg(app))
+    with open(desktop_path(app["id"]), "w") as f:
+        f.write("[Desktop Entry]\nType=Application\nName=%s\nComment=%s\n"
+                "Exec=fxos-webapp %s %s\nIcon=%s\nCategories=Network;FirefoxOSApp;\n"
+                "StartupWMClass=fxos-%s\nX-FirefoxOS-WebApp=true\n"
+                % (app["name"], app.get("desc", ""), app["id"], app["url"], icon, app["id"]))
+    subprocess.call(["update-desktop-database", APPS_DIR], stderr=subprocess.DEVNULL)
+    notify(app["name"], S["done"])
+
+
+def remove_web(app_id):
+    for p in (desktop_path(app_id), os.path.join(ICON_DIR, app_id + ".svg")):
+        if os.path.exists(p):
+            os.remove(p)
+
+
+def notify(title, body):
+    subprocess.Popen(["notify-send", "-a", "Marketplace", "-i", "system-software-install", title, body])
+
+
+def flatpak_installed():
+    try:
+        out = subprocess.check_output(["flatpak", "list", "--app", "--columns=application"], text=True)
+        return set(out.split())
+    except Exception:
+        return set()
+
+
+class Market(Gtk.Window):
+    def __init__(self):
+        super().__init__(title=S["title"])
+        self.set_default_size(900, 640)
+        self.set_icon_name("system-software-install")
+        prov = Gtk.CssProvider()
+        prov.load_from_data(CSS)
+        Gtk.StyleContext.add_provider_for_screen(Gdk.Screen.get_default(), prov,
+                                                 Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
+        box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
+        hero = Gtk.Label(label="🛍  " + S["title"], xalign=0)
+        hero.get_style_context().add_class("hero")
+        box.pack_start(hero, False, False, 0)
+        self.nb = Gtk.Notebook()
+        box.pack_start(self.nb, True, True, 0)
+        self.add(box)
+        self.web_page = self.scroller()
+        self.linux_page = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=8, margin=12)
+        self.inst_page = self.scroller()
+        self.nb.append_page(self.web_page[0], Gtk.Label(label=S["web"]))
+        self.nb.append_page(self.linux_page, Gtk.Label(label=S["linux"]))
+        self.nb.append_page(self.inst_page[0], Gtk.Label(label=S["installed"]))
+        self.nb.connect("switch-page", lambda *_: GLib.idle_add(self.refresh))
+        self.build_linux()
+        self.refresh()
+
+    def scroller(self):
+        sw = Gtk.ScrolledWindow()
+        flow = Gtk.FlowBox(selection_mode=Gtk.SelectionMode.NONE, max_children_per_line=4,
+                           column_spacing=10, row_spacing=10, margin=12, homogeneous=True)
+        sw.add(flow)
+        return sw, flow
+
+    def clear(self, flow):
+        for c in flow.get_children():
+            flow.remove(c)
+
+    def card(self, name, desc, buttons, color=None):
+        c = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=4)
+        c.get_style_context().add_class("card")
+        n = Gtk.Label(xalign=0)
+        dot = '<span foreground="%s">●</span> ' % color if color else ""
+        n.set_markup(dot + "<b>%s</b>" % escape(name))
+        d = Gtk.Label(label=desc, xalign=0, wrap=True)
+        d.get_style_context().add_class("dim")
+        c.pack_start(n, False, False, 0)
+        c.pack_start(d, True, True, 0)
+        row = Gtk.Box(spacing=6)
+        for label, cb, primary in buttons:
+            b = Gtk.Button(label=label)
+            if primary:
+                b.get_style_context().add_class("primary")
+            b.connect("clicked", lambda btn, f=cb: f(btn))
+            row.pack_end(b, False, False, 0)
+        c.pack_end(row, False, False, 0)
+        return c
+
+    # ---- web apps ----
+    def refresh(self):
+        cat = load_catalog()
+        flow = self.web_page[1]
+        self.clear(flow)
+        for app in cat["webapps"]:
+            if is_web_installed(app["id"]):
+                btns = [(S["open"], lambda b, a=app: subprocess.Popen(["fxos-webapp", a["id"], a["url"]]), False),
+                        (S["remove"], lambda b, a=app: (remove_web(a["id"]), self.refresh()), False)]
+            else:
+                btns = [(S["install"], lambda b, a=app: (install_web(a), self.refresh()), True)]
+            flow.add(self.card(app["name"], "%s · %s" % (app.get("category", ""), app.get("desc", "")),
+                               btns, app.get("color")))
+        flow.add(self.add_custom_card())
+        flow.show_all()
+        self.refresh_installed(cat)
+
+    def add_custom_card(self):
+        c = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=4)
+        c.get_style_context().add_class("card")
+        c.pack_start(Gtk.Label(label=S["add"], xalign=0), False, False, 0)
+        name = Gtk.Entry(placeholder_text=S["name"])
+        url = Gtk.Entry(placeholder_text=S["url"])
+        c.pack_start(name, False, False, 0)
+        c.pack_start(url, False, False, 0)
+        b = Gtk.Button(label=S["install"])
+        b.get_style_context().add_class("primary")
+
+        def add(_b):
+            n, u = name.get_text().strip(), url.get_text().strip()
+            if not n or not u:
+                return
+            if "://" not in u:
+                u = "https://" + u
+            app_id = "".join(ch for ch in n.lower() if ch.isalnum()) or "app"
+            app = {"id": app_id, "name": n, "url": u, "category": "Web", "desc": u, "color": "#e8571c"}
+            mine = json.load(open(USER_CATALOG)) if os.path.exists(USER_CATALOG) else []
+            mine = [m for m in mine if m["id"] != app_id] + [app]
+            os.makedirs(os.path.dirname(USER_CATALOG), exist_ok=True)
+            json.dump(mine, open(USER_CATALOG, "w"), indent=1)
+            install_web(app)
+            self.refresh()
+        b.connect("clicked", add)
+        c.pack_end(b, False, False, 0)
+        return c
+
+    # ---- linux apps ----
+    def build_linux(self):
+        top = Gtk.Box(spacing=8)
+        self.search = Gtk.SearchEntry(placeholder_text=S["search"])
+        self.search.connect("activate", self.on_search)
+        top.pack_start(self.search, True, True, 0)
+        more = Gtk.Button(label=S["more"])
+        more.connect("clicked", lambda *_: subprocess.Popen(["gnome-software"]))
+        top.pack_start(more, False, False, 0)
+        self.linux_page.pack_start(top, False, False, 0)
+        self.status = Gtk.Label(xalign=0)
+        self.linux_page.pack_start(self.status, False, False, 0)
+        sw, self.linux_flow = self.scroller()
+        self.linux_page.pack_start(sw, True, True, 0)
+        self.show_linux(load_catalog()["linux_featured"])
+
+    def show_linux(self, apps):
+        have = flatpak_installed()
+        self.clear(self.linux_flow)
+        for a in apps:
+            if a["id"] in have:
+                btns = [(S["open"], lambda b, a=a: subprocess.Popen(["flatpak", "run", a["id"]]), False),
+                        (S["remove"], lambda b, a=a: self.flatpak(b, "uninstall", a), False)]
+            else:
+                btns = [(S["install"], lambda b, a=a: self.flatpak(b, "install", a), True)]
+            self.linux_flow.add(self.card(a["name"], "%s\n%s" % (a.get("desc", ""), a["id"]), btns))
+        self.linux_flow.show_all()
+
+    def on_search(self, entry):
+        q = entry.get_text().strip()
+        if not q:
+            self.show_linux(load_catalog()["linux_featured"])
+            return
+        self.status.set_text(S["working"])
+
+        def work():
+            try:
+                out = subprocess.check_output(
+                    ["flatpak", "search", "--columns=name,description,application", q], text=True)
+                apps = []
+                for line in out.splitlines():
+                    parts = line.split("\t")
+                    if len(parts) >= 3 and "." in parts[2]:
+                        apps.append({"name": parts[0], "desc": parts[1], "id": parts[2]})
+                GLib.idle_add(lambda: (self.status.set_text(""), self.show_linux(apps[:40])))
+            except Exception:
+                GLib.idle_add(self.status.set_text, S["fail"])
+        threading.Thread(target=work, daemon=True).start()
+
+    def flatpak(self, btn, action, app):
+        btn.set_sensitive(False)
+        btn.set_label(S["working"])
+
+        def work():
+            subprocess.call(["flatpak", "remote-add", "--user", "--if-not-exists", "flathub",
+                             "https://dl.flathub.org/repo/flathub.flatpakrepo"])
+            cmd = ["flatpak", action, "--user", "-y", "--noninteractive"]
+            cmd += (["flathub", app["id"]] if action == "install" else [app["id"]])
+            ok = subprocess.call(cmd) == 0
+            if ok and action == "install":
+                notify(app["name"], S["done"])
+            GLib.idle_add(lambda: (self.status.set_text("" if ok else S["fail"]),
+                                   self.on_search(self.search)))
+        threading.Thread(target=work, daemon=True).start()
+
+    # ---- installed ----
+    def refresh_installed(self, cat):
+        flow = self.inst_page[1]
+        self.clear(flow)
+        for app in cat["webapps"]:
+            if is_web_installed(app["id"]):
+                flow.add(self.card(app["name"], S["web"],
+                                   [(S["remove"], lambda b, a=app: (remove_web(a["id"]), self.refresh()), False)],
+                                   app.get("color")))
+        for app_id in sorted(flatpak_installed()):
+            flow.add(self.card(app_id.split(".")[-1], app_id,
+                               [(S["remove"], lambda b, i=app_id: self.flatpak(b, "uninstall", {"id": i, "name": i}), False)]))
+        flow.show_all()
+
+
+if __name__ == "__main__":
+    w = Market()
+    w.connect("destroy", Gtk.main_quit)
+    w.show_all()
+    Gtk.main()
