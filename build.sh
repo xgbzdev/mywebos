@@ -31,7 +31,7 @@ for list in config/package-lists/*.list.chroot; do
     tmp=$(mktemp)
     while IFS= read -r line; do
         pkg=$(echo "$line" | sed 's/#.*//' | xargs)
-        if [ -z "$pkg" ] || apt-cache show "$pkg" >/dev/null 2>&1; then
+        if [ -z "$pkg" ] || apt-cache show --no-all-versions "$pkg" 2>/dev/null | grep -q "^Package:"; then
             echo "$line" >> "$tmp"
         else
             echo "   skipping unavailable package: $pkg"
