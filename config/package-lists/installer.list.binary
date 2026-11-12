@@ -1,6 +1,4 @@
-# Packages stored on the ISO so the installer can set up the
-# bootloader without internet (BIOS or UEFI)
+# Stored on the ISO so the installer can set up the BIOS bootloader offline
+# (grub-pc and grub-efi-amd64 conflict, so only one can be listed here;
+#  UEFI installs fetch grub-efi-amd64 from the internet)
 grub-pc
-grub-efi-amd64
-grub-efi-amd64-signed
-shim-signed
