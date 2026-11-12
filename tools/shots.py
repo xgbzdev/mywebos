@@ -40,11 +40,18 @@ def launch(query, name, wait):
 
 subprocess.call(["mkdir", "-p", OUT])
 shot("boot-menu", 8)
-key("ret")
-shot("desktop-welcome", 150)
-key("ret", 2)
-key("esc"); key("ctrl-alt-t"); shot("terminal", 15)
-type_text("fxos-welcome 2>&1 | tail -n 12; cat ~/.cache/fxos-session.log; ls ~/.config/firefoxos /etc/xdg/autostart"); key("ret"); shot("welcome-error", 20)
-key("ctrl-c", 2)
-type_text("tail -n 15 .xsession-errors"); key("ret"); shot("xsession-errors", 5)
-type_text("timeout 60 firefox-esr --headless --screenshot 2>&1 | tail -n 6"); key("ret"); shot("firefox-test", 65)
+key("ret")                                 # start "Live system"
+shot("welcome", 150)                       # live desktop + welcome wizard
+key("right", 3)                            # select "Italiano" -> wizard switches language
+shot("welcome-italiano", 3)
+key("alt-f4", 3)                           # close wizard
+key("meta_l"); shot("start-menu", 4)
+key("esc", 2)
+launch("marketplace", "marketplace", 25)
+key("alt-f4", 3)
+launch("emul", "emulators", 20)
+key("alt-f4", 3)
+launch("firefox", "firefox", 60)
+key("alt-f4", 3)
+key("ctrl-alt-t", 8)
+type_text("free -m; cat ~/.cache/fxos-session.log | tail -n 5"); key("ret"); shot("memory", 5)

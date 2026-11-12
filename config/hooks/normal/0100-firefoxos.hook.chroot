@@ -133,3 +133,10 @@ for k, v in {"dom.ipc.processCount": 2, "browser.cache.memory.capacity": 32768,
     prefs[k] = {"Value": v, "Status": "default"}
 json.dump(d, open(p, "w"), indent=2)
 P
+
+# Icon / image-loader caches (SVG icons need these)
+gdk-pixbuf-query-loaders --update-cache 2>/dev/null || \
+  /usr/lib/x86_64-linux-gnu/gdk-pixbuf-2.0/2.10.0/gdk-pixbuf-query-loaders --update-cache || true
+for t in /usr/share/icons/*/; do gtk-update-icon-cache -f -q "$t" 2>/dev/null || true; done
+# Sound: start PipeWire for every user
+systemctl --global enable pipewire.socket pipewire-pulse.socket wireplumber.service 2>/dev/null || true

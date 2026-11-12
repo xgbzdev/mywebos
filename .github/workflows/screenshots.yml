@@ -1,6 +1,9 @@
 name: Screenshots
 on:
   workflow_dispatch:
+  workflow_run:
+    workflows: ["Build Firefox OS ISO"]
+    types: [completed]
   push:
     paths:
       - '.github/workflows/screenshots.yml'
@@ -10,6 +13,7 @@ permissions:
 jobs:
   shots:
     runs-on: ubuntu-latest
+    if: ${{ github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success' }}
     steps:
       - uses: actions/checkout@v4
       - name: Install QEMU
@@ -18,7 +22,12 @@ jobs:
           sudo apt-get install -y -qq qemu-system-x86 qemu-utils imagemagick
           sudo chmod 666 /dev/kvm || true
       - name: Get slim ISO
-        run: curl -sL -o slim.iso https://github.com/xgbzdev/mywebos/releases/download/build-6/firefoxos-amd64.iso.part00
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          sleep 60   # let the publish job finish
+          gh release download -R "$GITHUB_REPOSITORY" --pattern 'firefoxos-amd64.iso.part*' --dir iso
+          cat iso/firefoxos-amd64.iso.part* > slim.iso && ls -la slim.iso
       - name: Boot and take screenshots
         run: |
           ACCEL="-enable-kvm -cpu host"; [ -w /dev/kvm ] || ACCEL=""

@@ -118,8 +118,10 @@ class Welcome(Gtk.Window):
         super().__init__(title="Firefox OS")
         self.set_default_size(560, 330)
         self.set_position(Gtk.WindowPosition.CENTER)
-        self.set_icon_from_file("/usr/share/firefoxos/icons/firefoxos.svg") \
-            if os.path.exists("/usr/share/firefoxos/icons/firefoxos.svg") else None
+        try:
+            self.set_icon_from_file("/usr/share/firefoxos/icons/firefoxos.png")
+        except Exception:
+            pass
         prov = Gtk.CssProvider()
         prov.load_from_data(CSS)
         Gtk.StyleContext.add_provider_for_screen(Gdk.Screen.get_default(), prov,

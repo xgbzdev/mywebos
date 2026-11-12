@@ -25,7 +25,19 @@
   </property>
   <property name="plugins" type="empty">
     <property name="plugin-1" type="string" value="whiskermenu">
-      <property name="button-icon" type="string" value="firefoxos"/>
+      <property name="button-icon" type="string" value="/usr/share/firefoxos/icons/firefoxos.png"/>
+      <property name="favorites" type="array">
+        <value type="string" value="firefox-esr.desktop"/>
+        <value type="string" value="fxos-marketplace.desktop"/>
+        <value type="string" value="fxos-emulators.desktop"/>
+        <value type="string" value="thunar.desktop"/>
+        <value type="string" value="xfce4-terminal.desktop"/>
+        <value type="string" value="org.xfce.mousepad.desktop"/>
+        <value type="string" value="galculator.desktop"/>
+        <value type="string" value="org.xfce.ristretto.desktop"/>
+        <value type="string" value="org.xfce.Parole.desktop"/>
+        <value type="string" value="xfce-settings-manager.desktop"/>
+      </property>
       <property name="show-button-title" type="bool" value="false"/>
       <property name="view-mode" type="int" value="1"/>
       <property name="launcher-show-name" type="bool" value="true"/>
