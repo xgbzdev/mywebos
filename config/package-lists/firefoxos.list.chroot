@@ -10,6 +10,17 @@ wamerican
 live-boot-initramfs-tools
 calamares
 calamares-settings-debian
+# installer helpers (normally pulled in as 'recommends')
+squashfs-tools
+rsync
+dosfstools
+mtools
+os-prober
+cryptsetup
+e2fsprogs
+parted
+grub2-common
+grub-efi-amd64-bin
 grub-efi-amd64-signed
 shim-signed
 grub-pc-bin

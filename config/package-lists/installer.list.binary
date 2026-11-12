@@ -1,0 +1,6 @@
+# Packages stored on the ISO so the installer can set up the
+# bootloader without internet (BIOS or UEFI)
+grub-pc
+grub-efi-amd64
+grub-efi-amd64-signed
+shim-signed
