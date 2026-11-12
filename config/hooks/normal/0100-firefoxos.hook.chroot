@@ -152,4 +152,22 @@ find /etc/skel -iname '*install-debian*' -delete 2>/dev/null || true
 for f in /usr/share/applications/install-debian.desktop /usr/share/applications/calamares.desktop; do
     if [ -f "$f" ]; then grep -q "^NoDisplay=" "$f" || echo "NoDisplay=true" >> "$f"; fi
 done
+# ---- Replace Debian branding in the installer ----
+B=/etc/calamares/branding/debian
+if [ -d "$B" ]; then
+    for key in productLogo productIcon productWelcome; do
+        img=$(grep -E "^[[:space:]]*$key:" "$B/branding.desc" | sed -E 's/^[^:]*:[[:space:]]*"?([^"]*)"?.*/\1/')
+        if [ -n "$img" ] && [ -f "$B/$img" ]; then
+            case "$img" in
+                *.svg) cp /usr/share/firefoxos/icons/firefoxos.svg "$B/$img" ;;
+                *)     cp /usr/share/firefoxos/icons/firefoxos.png "$B/$img" ;;
+            esac
+        fi
+    done
+    grep -rlI "Debian" "$B" | xargs -r sed -i 's#Debian GNU/Linux#Firefox OS#g; s#Debian#Firefox OS#g' || true
+fi
+# Menu/launcher names
+for f in /usr/share/applications/install-debian.desktop /usr/share/applications/calamares*.desktop; do
+    [ -f "$f" ] && sed -i 's/Install Debian/Install Firefox OS/g; s/Debian/Firefox OS/g' "$f" || true
+done
 exit 0

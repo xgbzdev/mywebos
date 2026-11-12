@@ -28,6 +28,16 @@ lb clean --purge || true
 echo "==> Configuring..."
 lb config
 
+echo "==> Branding the boot menu as Firefox OS..."
+if [ -d /usr/share/live/build/bootloaders ]; then
+    rm -rf config/bootloaders
+    cp -r /usr/share/live/build/bootloaders config/bootloaders
+    grep -rlI "Debian" config/bootloaders | xargs -r sed -i 's#Debian GNU/Linux#Firefox OS#g; s#Debian#Firefox OS#g'
+    find config/bootloaders -name 'splash.svg*' -exec cp branding/splash.svg {} \;
+    find config/bootloaders -name 'splash.png' -exec cp branding/splash.png {} \;
+    grep -rn "Firefox OS" config/bootloaders | head -5 || true
+fi
+
 echo "==> Building (this takes 20-60 minutes)..."
 lb build
 

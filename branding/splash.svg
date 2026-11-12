@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="640" height="480" viewBox="0 0 640 480">
+  <defs>
+    <radialGradient id="bg" cx="50%" cy="30%" r="80%"><stop offset="0" stop-color="#3f9a26"/><stop offset="1" stop-color="#0f3a12"/></radialGradient>
+    <radialGradient id="o" cx="40%" cy="30%" r="75%"><stop offset="0" stop-color="#ffcf3f"/><stop offset=".55" stop-color="#ff8a1f"/><stop offset="1" stop-color="#e2401c"/></radialGradient>
+    <linearGradient id="g" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#4fb6f0"/><stop offset="1" stop-color="#1d63c4"/></linearGradient>
+  </defs>
+  <rect width="640" height="480" fill="url(#bg)"/>
+  <g transform="translate(232,40) scale(0.34)">
+    <circle cx="128" cy="128" r="120" fill="url(#o)"/>
+    <circle cx="128" cy="128" r="72" fill="url(#g)" stroke="#fff" stroke-width="6"/>
+    <g fill="none" stroke="#fff" stroke-width="5"><ellipse cx="128" cy="128" rx="30" ry="72"/><line x1="56" y1="128" x2="200" y2="128"/><path d="M66 92 Q128 108 190 92"/><path d="M66 164 Q128 148 190 164"/></g>
+  </g>
+  <text x="320" y="160" font-family="DejaVu Sans, Noto Sans, sans-serif" font-size="34" font-weight="bold" fill="#ffffff" text-anchor="middle">Firefox OS</text>
+  <text x="320" y="186" font-family="DejaVu Sans, Noto Sans, sans-serif" font-size="14" fill="#d8f0c8" text-anchor="middle">2.0 slim</text>
+</svg>

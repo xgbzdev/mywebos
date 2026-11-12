@@ -16,6 +16,8 @@ rm -f "$DESK"/*install-debian*.desktop "$DESK"/calamares*.desktop
 for f in thunar firefox-esr fxos-marketplace; do
     [ -f "$DESK/$f.desktop" ] || { cp /usr/share/applications/$f.desktop "$DESK/" 2>/dev/null && chmod +x "$DESK/$f.desktop"; }
 done
+# Some installer launchers appear a little later: remove them for a while
+( for i in 1 2 3 4 5 6; do sleep 10; rm -f "$DESK"/*install-debian*.desktop "$DESK"/calamares*.desktop; done ) &
 sleep 2
 # Set the Firefox OS wallpaper on every monitor xfdesktop knows about
 for prop in $(xfconf-query -c xfce4-desktop -l 2>/dev/null | grep -E "last-image$"); do
