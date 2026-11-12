@@ -12,7 +12,8 @@ if grep -q "boot=live" /proc/cmdline; then
         gio set "$DESK/$f.desktop" metadata::trusted true 2>/dev/null || true
     done
 fi
-rm -f "$DESK"/*install-debian*.desktop "$DESK"/calamares*.desktop
+# The live system drops a Debian installer launcher on the desktop a bit later: keep removing it
+( for i in $(seq 1 20); do rm -f "$DESK"/*install-debian* "$DESK"/calamares*; sleep 3; done ) &
 for f in thunar firefox-esr fxos-marketplace; do
     [ -f "$DESK/$f.desktop" ] || { cp /usr/share/applications/$f.desktop "$DESK/" 2>/dev/null && chmod +x "$DESK/$f.desktop"; }
 done

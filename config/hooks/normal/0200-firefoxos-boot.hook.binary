@@ -1,0 +1,17 @@
+#!/bin/sh
+# Runs in the ISO tree after the boot menus are generated: rebrand them.
+set -e
+find . -path ./live -prune -o -type f \( -name '*.cfg' -o -name '*.txt' -o -name '*.conf' \) \
+     ! -name 'md5sum.txt' ! -name 'sha256sum.txt' -print | while read -r f; do
+    sed -i -e 's#Debian GNU/Linux#Firefox OS#g' -e 's#GNU/Debian#Firefox OS#g' \
+           -e 's#Debian#Firefox OS#g' -e 's# (trixie)##g' -e 's#trixie#2.0#g' \
+           -e 's#Live system (amd64 fail-safe mode)#Firefox OS - safe mode#g' \
+           -e 's#Live system (amd64)#Try Firefox OS#g' -e 's#Live system#Try Firefox OS#g' "$f"
+done
+if [ -f firefoxos-splash.png ]; then
+    find . -path ./live -prune -o -type f -name 'splash.png' -print | while read -r s; do
+        cp firefoxos-splash.png "$s"
+    done
+    rm -f firefoxos-splash.png
+fi
+exit 0

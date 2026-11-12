@@ -170,4 +170,38 @@ fi
 for f in /usr/share/applications/install-debian.desktop /usr/share/applications/calamares*.desktop; do
     [ -f "$f" ] && sed -i 's/Install Debian/Install Firefox OS/g; s/Debian/Firefox OS/g' "$f" || true
 done
+# ==== Rebrand: Debian -> Firefox OS everywhere the user can see ===========
+B=/etc/calamares/branding/debian
+if [ -d "$B" ]; then
+    cp /usr/share/firefoxos/icons/firefoxos.png "$B/firefoxos-logo.png"
+    sed -i -E 's/^(\s*product(Logo|Icon|Welcome):).*/\1 "firefoxos-logo.png"/' "$B/branding.desc"
+    sed -i -E 's/^(\s*(productUrl|supportUrl|knownIssuesUrl|releaseNotesUrl|donateUrl):).*/\1 "https:\/\/github.com\/xgbzdev\/mywebos"/' "$B/branding.desc"
+    find "$B" -type f \( -name '*.qml' -o -name '*.desc' -o -name '*.js' \) -exec \
+        sed -i -e 's#Debian GNU/Linux#Firefox OS#g' -e 's#Debian#Firefox OS#g' {} +
+fi
+for f in /usr/share/applications/install-debian.desktop /usr/share/applications/calamares*.desktop; do
+    if [ -f "$f" ]; then sed -i -e 's/^Name\(\[.*\]\)\?=.*/Name=Install Firefox OS/' -e 's/Debian/Firefox OS/g' "$f"; fi
+done
+# Installed system: boot menu, login screen and "About" show Firefox OS
+if [ -f /etc/default/grub ]; then
+    grep -q '^GRUB_DISTRIBUTOR=' /etc/default/grub && \
+      sed -i 's/^GRUB_DISTRIBUTOR=.*/GRUB_DISTRIBUTOR="Firefox OS"/' /etc/default/grub || \
+      echo 'GRUB_DISTRIBUTOR="Firefox OS"' >> /etc/default/grub
+fi
+mkdir -p /etc/default/grub.d
+echo 'GRUB_DISTRIBUTOR="Firefox OS"' > /etc/default/grub.d/99-firefoxos.cfg
+cat > /usr/lib/os-release <<'O'
+PRETTY_NAME="Firefox OS 2.0"
+NAME="Firefox OS"
+VERSION_ID="2.0"
+VERSION="2.0"
+ID=firefoxos
+ID_LIKE=debian
+HOME_URL="https://github.com/xgbzdev/mywebos"
+O
+ln -sf ../usr/lib/os-release /etc/os-release
+echo "Firefox OS 2.0 \\n \\l" > /etc/issue
+echo "Firefox OS 2.0" > /etc/issue.net
+# Calamares writes os-release name into GRUB on install via this branding key:
+[ -f "$B/branding.desc" ] && sed -i -E 's/^(\s*bootloaderEntryName:).*/\1 "Firefox OS"/' "$B/branding.desc"
 exit 0
