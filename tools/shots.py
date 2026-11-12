@@ -18,7 +18,7 @@ def hmp(cmd):
         pass
     s.close()
 
-KEYS = {" ": "spc", ".": "dot", "-": "minus", "/": "slash", ":": "shift-semicolon"}
+KEYS = {" ": "spc", ".": "dot", "-": "minus", "/": "slash", ":": "shift-semicolon", ";": "semicolon", "|": "shift-backslash", "_": "shift-minus", "*": "shift-8", '"': "shift-apostrophe", "~": "shift-grave_accent", ">": "shift-dot"}
 def key(k, wait=0.3):
     hmp("sendkey " + k); time.sleep(wait)
 def type_text(t):
@@ -54,4 +54,4 @@ key("alt-f4", 3)
 launch("firefox", "firefox", 60)
 key("alt-f4", 3)
 key("ctrl-alt-t", 8)
-type_text("which unsquashfs rsync grub-install grub-mkconfig mkfs.vfat os-prober; ls /usr/share/dict; find /run/live/medium/pool -name \"grub-pc_*\""); key("ret"); shot("memory", 5)
+type_text("ls /usr/sbin/grub-install /usr/sbin/grub-mkconfig /usr/sbin/mkfs.vfat /usr/bin/unsquashfs /usr/share/dict/words; ls -R /run/live/medium/pool | grep grub"); key("ret"); shot("installer-check", 6)
