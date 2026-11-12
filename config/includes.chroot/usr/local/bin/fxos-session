@@ -12,7 +12,7 @@ if grep -q "boot=live" /proc/cmdline; then
         gio set "$DESK/$f.desktop" metadata::trusted true 2>/dev/null || true
     done
 fi
-rm -f "$DESK/install-debian.desktop" "$DESK/calamares.desktop"
+rm -f "$DESK"/*install-debian*.desktop "$DESK"/calamares*.desktop
 for f in thunar firefox-esr fxos-marketplace; do
     [ -f "$DESK/$f.desktop" ] || { cp /usr/share/applications/$f.desktop "$DESK/" 2>/dev/null && chmod +x "$DESK/$f.desktop"; }
 done
