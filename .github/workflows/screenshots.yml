@@ -1,0 +1,37 @@
+name: Screenshots
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - '.github/workflows/screenshots.yml'
+      - 'tools/shots.py'
+permissions:
+  contents: write
+jobs:
+  shots:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install QEMU
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq qemu-system-x86 qemu-utils imagemagick
+          sudo chmod 666 /dev/kvm || true
+      - name: Get slim ISO
+        run: curl -sL -o slim.iso https://github.com/xgbzdev/mywebos/releases/download/build-6/firefoxos-amd64.iso.part00
+      - name: Boot and take screenshots
+        run: |
+          ACCEL="-enable-kvm -cpu host"; [ -w /dev/kvm ] || ACCEL=""
+          qemu-system-x86_64 $ACCEL -m 2048 -smp 2 -cdrom slim.iso -boot d \
+            -vga std -display none -usb -device usb-tablet \
+            -monitor unix:/tmp/qemu-mon,server,nowait -daemonize
+          sleep 2
+          python3 tools/shots.py shots
+          ls -la shots
+      - name: Publish screenshots
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release delete screenshots -y --cleanup-tag -R "$GITHUB_REPOSITORY" || true
+          gh release create screenshots shots/*.png -R "$GITHUB_REPOSITORY" --prerelease \
+            --title "Screenshots of the slim edition" --notes "Taken automatically in QEMU"
