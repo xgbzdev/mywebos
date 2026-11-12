@@ -6,6 +6,12 @@ KB="$HOME/.config/firefoxos/keyboard"
 DESK=$(xdg-user-dir DESKTOP 2>/dev/null || echo "$HOME/Desktop")
 mkdir -p "$DESK"
 if grep -q "boot=live" /proc/cmdline; then
+    # Try mode: never lock or blank the screen (e.g. during a long install)
+    pkill -x light-locker 2>/dev/null || true
+    xset s off -dpms 2>/dev/null || true
+    xfconf-query -c xfce4-power-manager -p /xfce4-power-manager/dpms-enabled -n -t bool -s false 2>/dev/null || true
+    xfconf-query -c xfce4-power-manager -p /xfce4-power-manager/lock-screen-suspend-hibernate -n -t bool -s false 2>/dev/null || true
+    xfconf-query -c xfce4-screensaver -p /lock/enabled -n -t bool -s false 2>/dev/null || true
     for f in fxos-install; do
         cp /usr/share/applications/$f.desktop "$DESK/" && sed -i '/^NoDisplay/d' "$DESK/$f.desktop"
         chmod +x "$DESK/$f.desktop"
