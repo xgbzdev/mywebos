@@ -40,19 +40,11 @@ def launch(query, name, wait):
 
 subprocess.call(["mkdir", "-p", OUT])
 shot("boot-menu", 8)
-key("ret")                                 # start "Live system"
-shot("desktop-welcome", 150)               # live desktop + welcome wizard
-key("tab"); key("tab"); key("ret", 2)      # pick a language button (Italiano)
-shot("welcome-italiano", 3)
-key("alt-f4", 3)                           # close wizard
-shot("desktop", 3)
-key("meta_l"); shot("start-menu", 4)
-key("esc", 2)
-launch("marketplace", "marketplace", 25)
-key("alt-f4", 3)
-launch("emul", "emulators", 20)
-key("alt-f4", 3)
-launch("firefox", "firefox", 60)
-key("alt-f4", 3)
-launch("thunar", "files", 15)
-key("super-up", 3)
+key("ret")
+shot("desktop-welcome", 150)
+key("ret", 2)
+launch("terminal", "terminal", 15)
+type_text("fxos-welcome 2>&1 | tail -n 12"); key("ret"); shot("welcome-error", 20)
+key("ctrl-c", 2)
+type_text("tail -n 15 .xsession-errors"); key("ret"); shot("xsession-errors", 5)
+type_text("timeout 60 firefox-esr --headless --screenshot 2>&1 | tail -n 6"); key("ret"); shot("firefox-test", 65)

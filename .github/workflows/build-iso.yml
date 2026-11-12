@@ -5,6 +5,8 @@ on:
     paths-ignore:
       - '.github/workflows/release.yml'
       - 'README.md'
+      - 'tools/**'
+      - '.github/workflows/screenshots.yml'
 jobs:
   iso:
     runs-on: ubuntu-latest
