@@ -150,5 +150,6 @@ fi
 # Only one installer icon: "Install Firefox OS"
 find /etc/skel -iname '*install-debian*' -delete 2>/dev/null || true
 for f in /usr/share/applications/install-debian.desktop /usr/share/applications/calamares.desktop; do
-    [ -f "$f" ] && { grep -q '^NoDisplay=' "$f" || echo "NoDisplay=true" >> "$f"; }
+    if [ -f "$f" ]; then grep -q "^NoDisplay=" "$f" || echo "NoDisplay=true" >> "$f"; fi
 done
+exit 0
