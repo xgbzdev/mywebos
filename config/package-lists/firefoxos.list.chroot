@@ -5,6 +5,8 @@ live-boot
 live-config
 live-config-systemd
 user-setup
+cracklib-runtime
+wamerican
 live-boot-initramfs-tools
 calamares
 calamares-settings-debian
