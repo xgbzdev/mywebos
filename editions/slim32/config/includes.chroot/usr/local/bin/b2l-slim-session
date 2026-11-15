@@ -27,6 +27,7 @@ for i in 1 2 3 4 5 6 7 8 9 10; do
     sleep 0.5
 done
 firefox-esr "http://127.0.0.1:8090/start" &
+b2l-home-window &
 
 sleep 6
 fxos-welcome --autostart &

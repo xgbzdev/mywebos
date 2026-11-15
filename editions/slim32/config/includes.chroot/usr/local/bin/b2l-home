@@ -7,4 +7,5 @@ else
     pgrep -f b2l-launcherd >/dev/null || (b2l-launcherd &)
     sleep 1
     firefox-esr "http://127.0.0.1:8090/start" &
+    b2l-home-window &
 fi

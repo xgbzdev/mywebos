@@ -5,7 +5,7 @@
 <script>
 /* Open the home screen as a toolbar-less window, then close this starter window. */
 var w = screen.availWidth, h = screen.availHeight;
-var home = window.open("/", "b2lhome", "popup=yes,left=0,top=0,width=" + w + ",height=" + h);
+var home = window.open("/", "b2lhome", "popup=yes,location=no,toolbar=no,menubar=no,status=no,scrollbars=yes,left=0,top=0,width=" + w + ",height=" + h);
 if (home) { setTimeout(function () { window.close(); }, 800); }
 else { location.replace("/"); }        /* pop-ups blocked: show it here instead */
 </script>

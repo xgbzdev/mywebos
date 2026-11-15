@@ -154,7 +154,7 @@
          everything), in their own toolbar-less window. */
       var w = a.portrait ? 420 : Math.min(screen.availWidth, 1280), h = screen.availHeight;
       var x = Math.max(0, Math.round((screen.availWidth - w) / 2));
-      var win = window.open(a.url, "app-" + id, "popup=yes,width=" + w + ",height=" + h + ",left=" + x + ",top=0");
+      var win = window.open(a.url, "app-" + id, "popup=yes,location=no,toolbar=no,menubar=no,status=no,scrollbars=yes,width=" + w + ",height=" + h + ",left=" + x + ",top=0");
       if (win) { win.focus(); } else { toast(t("cantOpen", a.name)); }
       return;
     }

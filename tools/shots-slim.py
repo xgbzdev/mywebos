@@ -35,32 +35,34 @@ subprocess.call(["mkdir", "-p", OUT])
 shot("boot-menu", 8)
 key("ret")
 shot("splash", 25)
-shot("welcome", 230)            # 512 MB + emulated disk: give it time
-key("alt-f4", 4)                # close the welcome wizard
-shot("home", 4)
+shot("welcome", 200)            # 512 MB + emulated disk: give it time
+key("alt-f4", 6)                # close the welcome wizard
+shot("home", 15)
 
-# make a folder the way the home screen stores it, then come back home
-key("ctrl-alt-t", 10)
+# 1. memory right after start-up (home screen open)
+key("ctrl-alt-t", 35)
+shot("terminal-open", 1)
+type_text("clear; free -m; ps -eo rss,comm --sort=-rss | head -n 9"); key("ret", 4)
+shot("memory-idle", 1)
+
+# 2. a folder, stored the same way the home screen stores it
 type_text('python3 -c "import json,os;p=os.path.expanduser(\'~/.config/firefoxos/launcher.json\');'
           'd=json.load(open(p));d[\'folders\'][\'folder-tools\']={\'name\':\'Tools\','
           '\'apps\':[\'galculator\',\'org.xfce.mousepad\',\'xarchiver\',\'lxterminal\']};'
           'd[\'items\'].insert(0,\'folder-tools\');json.dump(d,open(p,\'w\'))"')
 key("ret", 2)
-type_text("free -m; ps -eo rss,comm --sort=-rss | head -n 8")
-key("ret", 3)
-shot("memory", 2)
-key("meta_l", 6)                # Super = home (reloads layout on focus)
-shot("home-folder", 4)
-key("tab", 1); key("ret", 2)    # first icon = the folder
-shot("folder-open", 3)
+key("meta_l", 12)               # Super = home (reloads the layout when focused)
+shot("home-folder", 2)
+key("tab", 1); key("ret", 3)    # first icon = the folder
+shot("folder-open", 2)
 key("esc", 2)
+
+# 3. a Firefox OS app (FireCloud) in the shared engine
 type_text("firecloud"); shot("search", 2)
-key("ret", 25)
+key("ret", 60)
 shot("firecloud", 2)
-key("meta_l", 4)
-type_text("firefox"); key("ret", 40)
-shot("firefox", 2)
-key("ctrl-l", 1); type_text("about:memory"); key("ret", 8)
-key("ctrl-alt-t", 8)
-type_text("free -m"); key("ret", 2)
-shot("memory-with-firefox", 2)
+
+# 4. memory with FireCloud open
+key("ctrl-alt-t", 35)
+type_text("clear; free -m; ps -eo rss,comm --sort=-rss | head -n 9"); key("ret", 4)
+shot("memory-firecloud", 1)

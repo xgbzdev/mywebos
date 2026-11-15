@@ -73,6 +73,10 @@ pref("app.normandy.enabled", false);
 pref("browser.discovery.enabled", false);
 pref("browser.tabs.warnOnClose", false);
 pref("dom.allow_scripts_to_close_windows", true);
+// let the home screen and B2L apps open app-style windows without an address bar
+pref("dom.disable_window_open_feature.location", false);
+pref("dom.disable_window_open_feature.toolbar", false);
+pref("dom.disable_window_open_feature.menubar", false);
 J
 
 # Firefox policies: allow the home screen to open its window; privacy defaults
