@@ -59,3 +59,16 @@ create policy "firecloud: change own" on storage.objects for update to authentic
 
 create policy "firecloud: delete own" on storage.objects for delete to authenticated
   using (bucket_id = 'firecloud' and (storage.foldername(name))[1] = auth.uid()::text);
+
+-- 3. Delete my account (the app deletes the user's files first)
+create or replace function public.delete_my_account()
+returns void language plpgsql security definer set search_path = '' as $$
+declare me uuid := auth.uid();
+begin
+  if me is null then raise exception 'not signed in' using errcode = '42501'; end if;
+  delete from public.devices where user_id = me;
+  delete from auth.users where id = me;
+end;
+$$;
+revoke all on function public.delete_my_account() from public, anon;
+grant execute on function public.delete_my_account() to authenticated;

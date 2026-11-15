@@ -10,7 +10,7 @@
 <div id="status-msg" class="toast hidden"></div>
 
 <!-- Server setup (only until the app is pre-configured) -->
-<section id="v-setup" class="view hidden">
+<section id="v-setup" class="view with-bar hidden">
   <header class="bar"><h1 data-l10n="setupTitle">FireCloud setup</h1></header>
   <div class="pad">
     <p data-l10n="setupText">Enter your FireCloud server (Supabase project) details once.</p>
@@ -35,7 +35,7 @@
   <div class="pad">
     <input id="login-email" type="email" data-l10n-ph="email" placeholder="Email" autocomplete="username">
     <input id="login-pass" type="password" data-l10n-ph="password" placeholder="Password" autocomplete="current-password">
-    <div class="lang-row"><span>🌐</span><select class="lang-select" aria-label="Language"></select></div>
+    <div class="lang-row"><span data-l10n="language">Language</span><select class="lang-select" aria-label="Language"></select></div>
   </div>
   <footer class="btnrow">
     <button id="btn-signup" data-l10n="createAccount">Create account</button>
@@ -47,7 +47,7 @@
 <section id="v-main" class="view hidden">
   <header class="bar">
     <h1 id="main-title">FireCloud</h1>
-    <button id="btn-menu" class="icon" aria-label="Menu">⋮</button>
+    <button id="btn-menu" class="icon" aria-label="Menu">···</button>
   </header>
   <nav class="tabs">
     <a href="#photos" data-tab="photos" data-l10n="photos">Photos</a>
@@ -85,7 +85,7 @@
 </section>
 
 <!-- Device detail / map -->
-<section id="v-device" class="view hidden">
+<section id="v-device" class="view with-bar hidden">
   <header class="bar"><button id="dev-back" class="icon">‹</button><h1 id="dev-name"></h1></header>
   <div class="map" id="dev-map"><img id="dev-tile" alt=""><div id="dev-pin"></div></div>
   <div class="pad"><p id="dev-info"></p><p class="hint" id="dev-seen"></p></div>
@@ -96,7 +96,7 @@
 </section>
 
 <!-- Viewer -->
-<section id="v-viewer" class="view hidden">
+<section id="v-viewer" class="view with-bar hidden">
   <header class="bar dark"><button id="view-back" class="icon">‹</button><h1 id="view-name"></h1></header>
   <div class="viewer" id="viewer-box"></div>
   <footer class="btnrow">
@@ -123,7 +123,8 @@
     <div class="lang-row menu-lang"><span data-l10n="language">Language</span><select class="lang-select" aria-label="Language"></select></div>
     <button id="m-rename" data-l10n="renameDevice">Rename this device</button>
     <button id="m-server" data-l10n="serverSettings">Server settings</button>
-    <button id="m-logout" class="danger" data-l10n="signOut">Sign out</button>
+    <button id="m-logout" data-l10n="signOut">Sign out</button>
+    <button id="m-delete" class="danger" data-l10n="deleteAccount">Delete account</button>
     <button id="m-close" data-l10n="close">Close</button>
   </div>
 </div>

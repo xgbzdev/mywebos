@@ -6,6 +6,8 @@ var LANGS = [
 ];
 var L10N = {
   en: {
+    deleteAccount: "Delete account", deleteAccountQ: "Delete your FireCloud account? All your photos, videos, apps and devices will be erased. This can't be undone.",
+    deletingAccount: "Deleting your account…", accountDeleted: "Your FireCloud account has been deleted.",
     tooMany: "Too many attempts. FireCloud can send only a few emails per hour: please wait about an hour and try again.",
     setupTitle: "FireCloud setup", setupText: "Enter your FireCloud server (Supabase project) details once.",
     serverUrl: "Server address", publicKey: "Publishable key", keyHint: "Never use the secret / service_role key here.",
@@ -32,6 +34,8 @@ var L10N = {
     remove: "Remove", thisOne: "(this device)", phoneName: "Firefox OS phone", pcName: "B2L computer"
   },
   it: {
+    deleteAccount: "Elimina account", deleteAccountQ: "Eliminare il tuo account FireCloud? Tutte le foto, i video, le app e i dispositivi verranno cancellati. Non si può annullare.",
+    deletingAccount: "Eliminazione dell'account…", accountDeleted: "Il tuo account FireCloud è stato eliminato.",
     tooMany: "Troppi tentativi. FireCloud può inviare solo poche email all'ora: attendi circa un'ora e riprova.",
     setupTitle: "Configura FireCloud", setupText: "Inserisci una volta i dati del server FireCloud (progetto Supabase).",
     serverUrl: "Indirizzo del server", publicKey: "Chiave pubblicabile", keyHint: "Non usare mai qui la chiave segreta / service_role.",
@@ -58,6 +62,8 @@ var L10N = {
     remove: "Rimuovi", thisOne: "(questo dispositivo)", phoneName: "Telefono Firefox OS", pcName: "Computer B2L"
   },
   el: {
+    deleteAccount: "Διαγραφή λογαριασμού", deleteAccountQ: "Διαγραφή του λογαριασμού σας στο FireCloud; Όλες οι φωτογραφίες, τα βίντεο, οι εφαρμογές και οι συσκευές σας θα διαγραφούν. Δεν αναιρείται.",
+    deletingAccount: "Διαγραφή λογαριασμού…", accountDeleted: "Ο λογαριασμός σας στο FireCloud διαγράφηκε.",
     tooMany: "Πάρα πολλές προσπάθειες. Το FireCloud μπορεί να στείλει λίγα email την ώρα: περιμένετε περίπου μία ώρα και δοκιμάστε ξανά.",
     setupTitle: "Ρύθμιση FireCloud", setupText: "Εισαγάγετε μία φορά τα στοιχεία του διακομιστή FireCloud (έργο Supabase).",
     serverUrl: "Διεύθυνση διακομιστή", publicKey: "Δημοσιεύσιμο κλειδί", keyHint: "Μη χρησιμοποιείτε ποτέ εδώ το μυστικό κλειδί / service_role.",
@@ -85,6 +91,8 @@ var L10N = {
     remove: "Αφαίρεση", thisOne: "(αυτή η συσκευή)", phoneName: "Τηλέφωνο Firefox OS", pcName: "Υπολογιστής B2L"
   },
   es: {
+    deleteAccount: "Eliminar cuenta", deleteAccountQ: "¿Eliminar tu cuenta de FireCloud? Se borrarán todas tus fotos, vídeos, apps y dispositivos. No se puede deshacer.",
+    deletingAccount: "Eliminando tu cuenta…", accountDeleted: "Tu cuenta de FireCloud se ha eliminado.",
     tooMany: "Demasiados intentos. FireCloud solo puede enviar unos pocos correos por hora: espera una hora e inténtalo de nuevo.",
     setupTitle: "Configurar FireCloud", setupText: "Introduce una vez los datos del servidor FireCloud (proyecto Supabase).",
     serverUrl: "Dirección del servidor", publicKey: "Clave publicable", keyHint: "Nunca uses aquí la clave secreta / service_role.",
@@ -112,6 +120,8 @@ var L10N = {
     remove: "Quitar", thisOne: "(este dispositivo)", phoneName: "Teléfono Firefox OS", pcName: "Ordenador B2L"
   },
   fr: {
+    deleteAccount: "Supprimer le compte", deleteAccountQ: "Supprimer votre compte FireCloud ? Toutes vos photos, vidéos, applis et appareils seront effacés. C'est irréversible.",
+    deletingAccount: "Suppression du compte…", accountDeleted: "Votre compte FireCloud a été supprimé.",
     tooMany: "Trop de tentatives. FireCloud ne peut envoyer que quelques e-mails par heure : attendez environ une heure et réessayez.",
     setupTitle: "Configurer FireCloud", setupText: "Saisissez une fois les informations du serveur FireCloud (projet Supabase).",
     serverUrl: "Adresse du serveur", publicKey: "Clé publiable", keyHint: "N'utilisez jamais ici la clé secrète / service_role.",
@@ -139,6 +149,8 @@ var L10N = {
     remove: "Retirer", thisOne: "(cet appareil)", phoneName: "Téléphone Firefox OS", pcName: "Ordinateur B2L"
   },
   de: {
+    deleteAccount: "Konto löschen", deleteAccountQ: "Dein FireCloud-Konto löschen? Alle Fotos, Videos, Apps und Geräte werden gelöscht. Das kann nicht rückgängig gemacht werden.",
+    deletingAccount: "Konto wird gelöscht…", accountDeleted: "Dein FireCloud-Konto wurde gelöscht.",
     tooMany: "Zu viele Versuche. FireCloud kann nur wenige E-Mails pro Stunde senden: Warte etwa eine Stunde und versuche es erneut.",
     setupTitle: "FireCloud einrichten", setupText: "Gib einmalig die Daten des FireCloud-Servers (Supabase-Projekt) ein.",
     serverUrl: "Serveradresse", publicKey: "Öffentlicher Schlüssel", keyHint: "Verwende hier niemals den geheimen / service_role-Schlüssel.",
@@ -166,6 +178,8 @@ var L10N = {
     remove: "Entfernen", thisOne: "(dieses Gerät)", phoneName: "Firefox-OS-Telefon", pcName: "B2L-Computer"
   },
   pt: {
+    deleteAccount: "Eliminar conta", deleteAccountQ: "Eliminar a sua conta FireCloud? Todas as fotos, vídeos, apps e dispositivos serão apagados. Não é possível anular.",
+    deletingAccount: "A eliminar a conta…", accountDeleted: "A sua conta FireCloud foi eliminada.",
     tooMany: "Demasiadas tentativas. O FireCloud só pode enviar poucos emails por hora: aguarde cerca de uma hora e tente de novo.",
     setupTitle: "Configurar o FireCloud", setupText: "Introduza uma vez os dados do servidor FireCloud (projeto Supabase).",
     serverUrl: "Endereço do servidor", publicKey: "Chave publicável", keyHint: "Nunca use aqui a chave secreta / service_role.",
@@ -193,6 +207,8 @@ var L10N = {
     remove: "Remover", thisOne: "(este dispositivo)", phoneName: "Telemóvel Firefox OS", pcName: "Computador B2L"
   },
   pl: {
+    deleteAccount: "Usuń konto", deleteAccountQ: "Usunąć konto FireCloud? Wszystkie zdjęcia, filmy, aplikacje i urządzenia zostaną skasowane. Tego nie można cofnąć.",
+    deletingAccount: "Usuwanie konta…", accountDeleted: "Twoje konto FireCloud zostało usunięte.",
     tooMany: "Zbyt wiele prób. FireCloud może wysłać tylko kilka e-maili na godzinę: poczekaj około godziny i spróbuj ponownie.",
     setupTitle: "Konfiguracja FireCloud", setupText: "Wpisz jednorazowo dane serwera FireCloud (projekt Supabase).",
     serverUrl: "Adres serwera", publicKey: "Klucz publiczny", keyHint: "Nigdy nie używaj tu klucza tajnego / service_role.",

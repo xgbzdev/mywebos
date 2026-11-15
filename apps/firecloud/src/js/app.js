@@ -178,7 +178,7 @@
           var thumb = document.createElement("div");
           if (!isVid && urls[p]) { thumb.style.backgroundImage = "url(\"" + urls[p] + "\")"; }
           cell.appendChild(thumb);
-          if (isVid) { var b = document.createElement("span"); b.className = "badge"; b.textContent = "▶ video"; cell.appendChild(b); }
+          if (isVid) { var b = document.createElement("span"); b.className = "badge"; b.textContent = "video"; cell.appendChild(b); }
           cell.onclick = function () { openViewer(f, p, urls[p], isVid); };
           grid.appendChild(cell);
         });
@@ -284,13 +284,13 @@
         var ul = $("app-list"); ul.innerHTML = "";
         list.forEach(function (f, i) {
           var li = document.createElement("li");
-          li.innerHTML = '<div class="txt"><b></b><small></small></div><button class="primary"></button><button></button>';
+          li.innerHTML = '<div class="txt"><b></b><small></small></div><div class="btncell"><button class="primary"></button><button></button></div>';
           li.querySelector("b").textContent = f.name.replace(/\.zip$/i, "");
           li.querySelector("small").textContent = fmtSize((f.metadata || {}).size || 0);
           var bt = li.querySelectorAll("button");
           bt[0].textContent = _("download");
           bt[0].onclick = function () { if (urls[paths[i]]) { window.open(urls[paths[i]], "_blank"); } };
-          bt[1].textContent = "✕";
+          bt[1].textContent = "×";
           bt[1].onclick = function () {
             confirmBox(_("deleteQ", f.name), _("delete"), true, function (yes) {
               if (yes) { Files.remove([paths[i]], function (e3) { if (e3) { toast(errText(e3)); } loadApps(); }); }
@@ -365,13 +365,13 @@
       var ul = $("device-list"); ul.innerHTML = "";
       state.devices.forEach(function (d) {
         var li = document.createElement("li");
-        li.innerHTML = '<span class="dot"></span><div class="txt"><b></b><small></small></div><button></button>';
+        li.innerHTML = '<div class="dot"><span></span></div><div class="txt"><b></b><small></small></div><div class="btncell one"><button></button></div>';
         var fresh = d.last_seen && (Date.now() - new Date(d.last_seen).getTime()) < 15 * 60000;
         li.querySelector(".dot").className = "dot" + (fresh ? " on" : "");
         li.querySelector("b").textContent = d.name + (d.id === deviceId() ? " " + _("thisOne") : "");
         li.querySelector("small").textContent = !d.locate_enabled ? _("locOff") :
           (d.last_seen ? _("seen", ago(d.last_seen)) : _("neverSeen"));
-        var rm = li.querySelector("button"); rm.textContent = "✕";
+        var rm = li.querySelector("button"); rm.textContent = "×";
         rm.onclick = function (ev) {
           ev.stopPropagation();
           confirmBox(_("removeDeviceQ", d.name), _("remove"), true, function (yes) {
@@ -447,6 +447,44 @@
       if (!yes) { return; }
       clearInterval(state.reportTimer); clearInterval(state.pollTimer);
       Auth.signOut(); show("v-login");
+    });
+  };
+
+  /* Delete account: remove all my files, then my devices and the account itself. */
+  $("m-delete").onclick = function () {
+    $("menu").classList.add("hidden");
+    confirmBox(_("deleteAccountQ"), _("deleteAccount"), true, function (yes) {
+      if (!yes) { return; }
+      toast(_("deletingAccount"), 60000);
+      Auth.ready(function (err) {
+        if (err) { toast(errText(err)); return; }
+        var me = uid(), paths = [];
+        (function collect(folders) {
+          var f = folders.shift();
+          if (f === undefined) { removeFiles(); return; }
+          Files.list(me + "/" + f, function (e2, list) {
+            if (e2) { toast(errText(e2)); return; }
+            list.forEach(function (x) { paths.push(me + "/" + f + "/" + x.name); });
+            collect(folders);
+          });
+        })(["photos", "apps"]);
+        function removeFiles() {
+          if (!paths.length) { removeAccount(); return; }
+          Files.remove(paths.splice(0, 100), function (e3) {
+            if (e3) { toast(errText(e3)); return; }
+            removeFiles();
+          });
+        }
+        function removeAccount() {
+          Net.request("POST", "/rest/v1/rpc/delete_my_account", { json: {} }, function (e4) {
+            if (e4) { toast(errText(e4)); return; }
+            clearInterval(state.reportTimer); clearInterval(state.pollTimer);
+            LS.removeItem("fc_session"); LS.removeItem("fc_locate");
+            show("v-login");
+            toast(_("accountDeleted"), 6000);
+          });
+        }
+      });
     });
   };
 
