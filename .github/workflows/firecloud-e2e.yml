@@ -1,0 +1,22 @@
+name: FireCloud end-to-end test
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'tools/firecloud-e2e.sh'
+      - '.github/workflows/firecloud-e2e.yml'
+permissions:
+  contents: write
+jobs:
+  e2e:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: bash tools/firecloud-e2e.sh || true
+      - name: Publish results
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release delete firecloud-e2e -y --cleanup-tag -R "$GITHUB_REPOSITORY" || true
+          gh release create firecloud-e2e results.txt -R "$GITHUB_REPOSITORY" --prerelease \
+            --title "FireCloud end-to-end test" --notes "Automated server test"

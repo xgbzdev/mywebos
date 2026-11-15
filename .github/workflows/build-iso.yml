@@ -7,6 +7,7 @@ on:
       - 'README.md'
       - 'tools/**'
       - '.github/workflows/screenshots.yml'
+      - '.github/workflows/firecloud-e2e.yml'
 jobs:
   iso:
     runs-on: ubuntu-latest
