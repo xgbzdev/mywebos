@@ -1,7 +1,6 @@
 @echo off
-rem Starts the B2L helper on the phone with FireCloud's server allowed.
-rem Tries both possible names of the "extra allowed hosts" option, then a plain start.
-set "HOSTS=wksjtjligjvclvmyjgcd.supabase.co,tile.openstreetmap.org"
+rem Starts the B2L helper on the phone with FireCloud's server allowed (-allow).
+set "ALLOW=wksjtjligjvclvmyjgcd.supabase.co,tile.openstreetmap.org"
 set "ADB=adb"
 if exist "C:\Users\%USERNAME%\Downloads\platform-tools\adb.exe" set "ADB=C:\Users\%USERNAME%\Downloads\platform-tools\adb.exe"
 set "LOG=/data/local/tmp/b2l-helper.log"
@@ -15,22 +14,8 @@ for /f "tokens=2" %%P in ('"%ADB%" shell ps ^| find "b2l-helper"') do (
 )
 timeout /t 2 >nul
 
-for %%F in (hosts extra) do (
-  "%ADB%" shell rm %LOG% 2^>/dev/null
-  echo Trying option -%%F ...
-  "%ADB%" shell /data/local/tmp/b2l-helper -daemon -log %LOG% -%%F %HOSTS%
-  timeout /t 3 >nul
-  "%ADB%" shell cat %LOG% | find "listening" >nul
-  if not errorlevel 1 (
-    echo.
-    echo Helper is running with FireCloud allowed ^(option -%%F^).
-    goto done
-  )
-)
-
-echo Neither option worked, starting the helper without it...
 "%ADB%" shell rm %LOG% 2^>/dev/null
-"%ADB%" shell /data/local/tmp/b2l-helper -daemon -log %LOG%
+"%ADB%" shell /data/local/tmp/b2l-helper -daemon -log %LOG% -allow %ALLOW%
 timeout /t 3 >nul
 "%ADB%" shell cat %LOG% | find "listening" >nul
 if errorlevel 1 (
@@ -40,11 +25,7 @@ if errorlevel 1 (
   echo Send a photo of this window.
 ) else (
   echo.
-  echo Helper is running, but WITHOUT FireCloud's server allowed.
-  echo Send a photo of this window.
+  echo Helper is running with FireCloud allowed. Open FireCloud on the phone.
+  echo After every phone restart, run this file again.
 )
-
-:done
-echo.
-"%ADB%" shell cat %LOG%
 pause
