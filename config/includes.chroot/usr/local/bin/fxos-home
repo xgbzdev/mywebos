@@ -146,6 +146,12 @@ def all_apps():
         if not isinstance(info, Gio.DesktopAppInfo):
             continue
         aid = info.get_id() or ""
+        if "install-debian" in aid or aid.startswith("calamares"):
+            continue
+        if aid == "fxos-install.desktop":
+            if LIVE:
+                apps.append(info)        # hidden from menus, shown on the live home screen
+            continue
         if aid in HIDE or not info.should_show():
             continue
         cats = info.get_categories() or ""
