@@ -41,6 +41,11 @@ def confirm(parent, message, ok="OK", cancel="Cancel", title=None, danger=False)
     row.pack_start(b_ok, True, True, 0)
     area.pack_end(row, False, False, 0)
     dlg.show_all()
+    if parent is None:                      # centre on the screen ourselves
+        from gi.repository import Gdk
+        scr = Gdk.Screen.get_default()
+        w, h = dlg.get_size()
+        dlg.move(max(0, (scr.get_width() - w) // 2), max(0, (scr.get_height() - h) // 2))
     b_ok.grab_focus()
     res = dlg.run()
     dlg.destroy()

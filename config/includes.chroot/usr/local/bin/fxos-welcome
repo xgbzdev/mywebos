@@ -105,6 +105,8 @@ window.fxwelcome { background-color: #2d2d2d; }
 .header .title { font-size: 17pt; color: #ffffff; }
 .header .sub { font-size: 10pt; color: #bdbdbd; }
 .body label { color: #f2f2f2; }
+.body button label, .body combobox label, .body entry { color: #333333; }
+.body button.primary label, .lang-btn:checked label { color: #ffffff; }
 .lang-btn { min-width: 150px; min-height: 38px; }
 .lang-btn:checked { background-image: none; background-color: #00caf2; border-color: #00a6c9; color: #fff; }
 .primary { background-image: none; background-color: #00caf2; color: white; border-color: #00a6c9; }
