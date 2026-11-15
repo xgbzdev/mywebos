@@ -88,6 +88,9 @@ dbus-x11
 xdg-user-dirs
 xdg-utils
 sudo
+wmctrl
+plymouth
+ntfs-3g
 
 # --- Firefox + languages ---
 firefox-esr

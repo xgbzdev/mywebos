@@ -1,0 +1,374 @@
+#!/usr/bin/env python3
+"""Firefox OS home screen: search bar, grid of round app icons and a dock,
+drawn over the wallpaper as the desktop.
+
+Run again (or press the Super key) to bring the home screen to the front.
+"""
+import json
+import os
+import subprocess
+import sys
+import urllib.parse
+
+import gi
+
+gi.require_version("Gtk", "3.0")
+gi.require_version("Gdk", "3.0")
+from gi.repository import Gdk, GdkPixbuf, Gio, GLib, Gtk  # noqa: E402
+
+HOME = os.path.expanduser("~")
+CONF_DIR = os.path.join(HOME, ".config/firefoxos")
+DOCK_FILE = os.path.join(CONF_DIR, "dock.json")
+WALL_FILE = os.path.join(CONF_DIR, "wallpaper")
+DEFAULT_WALL = "/usr/share/firefoxos/wallpapers/default.png"
+LIVE = "boot=live" in open("/proc/cmdline").read()
+DEFAULT_DOCK = ["firefox-esr.desktop", "fxos-marketplace.desktop",
+                "thunar.desktop", "xfce-settings-manager.desktop"]
+ICON = 60          # icon size in px
+TILE = 104         # grid cell width
+
+# Apps that clutter the grid (settings sub-dialogs etc.)
+HIDE = {"xfce4-session-logout.desktop", "xfce4-run.desktop", "thunar-bulk-rename.desktop",
+        "thunar-settings.desktop", "xfce4-about.desktop", "org.xfce.Parole.desktop.bak",
+        "debian-xterm.desktop", "debian-uxterm.desktop", "fxos-home.desktop",
+        "pavucontrol.desktop", "nm-connection-editor.desktop", "install-debian.desktop",
+        "calamares.desktop", "mate-polkit.desktop", "galculator.desktop.bak",
+        "python3.13.desktop", "vim.desktop", "fxos-welcome.desktop"}
+if not LIVE:
+    HIDE.add("fxos-install.desktop")
+
+L = {
+    "en": ("Search the web or apps", "Add to dock", "Remove from dock", "Uninstall",
+           "Change wallpaper…", "Search for “%s”"),
+    "it": ("Cerca nel web o nelle app", "Aggiungi al dock", "Togli dal dock", "Disinstalla",
+           "Cambia sfondo…", "Cerca “%s”"),
+    "es": ("Busca en la web o apps", "Añadir al dock", "Quitar del dock", "Desinstalar",
+           "Cambiar fondo…", "Buscar “%s”"),
+    "fr": ("Rechercher sur le web ou les applis", "Ajouter au dock", "Retirer du dock",
+           "Désinstaller", "Changer de fond d'écran…", "Rechercher « %s »"),
+    "de": ("Web oder Apps durchsuchen", "Zum Dock hinzufügen", "Aus dem Dock entfernen",
+           "Deinstallieren", "Hintergrund ändern…", "Nach „%s“ suchen"),
+    "el": ("Αναζήτηση στο web ή σε εφαρμογές", "Προσθήκη στο dock", "Αφαίρεση από το dock",
+           "Απεγκατάσταση", "Αλλαγή ταπετσαρίας…", "Αναζήτηση «%s»"),
+    "pt": ("Pesquisar na web ou apps", "Adicionar à dock", "Remover da dock", "Desinstalar",
+           "Mudar fundo…", "Pesquisar “%s”"),
+    "pl": ("Szukaj w sieci lub aplikacjach", "Dodaj do docka", "Usuń z docka", "Odinstaluj",
+           "Zmień tapetę…", "Szukaj „%s”"),
+}
+S = L.get(os.environ.get("LANG", "en")[:2], L["en"])
+
+CSS = b"""
+#home { background-color: #2f7d1f; }
+.search { background: rgba(255,255,255,0.92); border-radius: 22px; border: none;
+          padding: 8px 18px; min-height: 26px; font-size: 12pt; color: #333;
+          box-shadow: 0 1px 4px rgba(0,0,0,0.35); }
+.app { background: transparent; border: none; box-shadow: none; padding: 6px 2px; border-radius: 14px; }
+.app:hover { background: rgba(255,255,255,0.14); }
+.app:active { background: rgba(255,255,255,0.28); }
+.app label { color: white; font-size: 10pt; text-shadow: 0 1px 3px rgba(0,0,0,0.9); }
+.app image { -gtk-icon-shadow: 0 2px 4px rgba(0,0,0,0.45); }
+.dock { background: rgba(0,0,0,0.30); border-radius: 0; padding: 8px 20px; }
+.dock .app label { font-size: 9pt; }
+scrolledwindow, viewport, flowbox, flowboxchild { background: transparent; }
+flowboxchild { padding: 0; }
+.hint { color: rgba(255,255,255,0.85); text-shadow: 0 1px 2px rgba(0,0,0,0.8); }
+"""
+
+
+def load_dock():
+    try:
+        with open(DOCK_FILE) as f:
+            return json.load(f)
+    except (OSError, ValueError):
+        return list(DEFAULT_DOCK)
+
+
+def save_dock(d):
+    os.makedirs(CONF_DIR, exist_ok=True)
+    with open(DOCK_FILE, "w") as f:
+        json.dump(d, f)
+
+
+def wallpaper():
+    try:
+        p = open(WALL_FILE).read().strip()
+        if os.path.exists(p):
+            return p
+    except OSError:
+        pass
+    return DEFAULT_WALL
+
+
+def icon_image(info, size):
+    gicon = info.get_icon()
+    theme = Gtk.IconTheme.get_default()
+    pix = None
+    try:
+        if isinstance(gicon, Gio.FileIcon):
+            pix = GdkPixbuf.Pixbuf.new_from_file_at_scale(gicon.get_file().get_path(), size, size, True)
+        elif gicon is not None:
+            ii = theme.lookup_by_gicon(gicon, size, Gtk.IconLookupFlags.FORCE_SIZE)
+            if ii:
+                pix = ii.load_icon()
+        if pix is None and info.get_string("Icon") and os.path.exists(info.get_string("Icon")):
+            pix = GdkPixbuf.Pixbuf.new_from_file_at_scale(info.get_string("Icon"), size, size, True)
+    except GLib.Error:
+        pix = None
+    if pix is None:
+        pix = theme.load_icon("application-x-executable", size, Gtk.IconLookupFlags.FORCE_SIZE)
+    return Gtk.Image.new_from_pixbuf(pix)
+
+
+def all_apps():
+    apps = []
+    for info in Gio.AppInfo.get_all():
+        if not isinstance(info, Gio.DesktopAppInfo):
+            continue
+        aid = info.get_id() or ""
+        if aid in HIDE or not info.should_show():
+            continue
+        cats = info.get_categories() or ""
+        if "X-XFCE-SettingsDialog" in cats or "X-XFCE-HardwareSettings" in cats \
+                or "X-XFCE-PersonalSettings" in cats:
+            continue
+        apps.append(info)
+    # live session: the installer first; then alphabetical
+    apps.sort(key=lambda i: (i.get_id() != "fxos-install.desktop", i.get_display_name().lower()))
+    return apps
+
+
+class Home(Gtk.Application):
+    def __init__(self):
+        super().__init__(application_id="org.firefoxos.Home",
+                         flags=Gio.ApplicationFlags.FLAGS_NONE)
+        self.win = None
+
+    def do_activate(self):
+        if self.win:
+            self.show_home()
+            return
+        prov = Gtk.CssProvider()
+        prov.load_from_data(CSS)
+        Gtk.StyleContext.add_provider_for_screen(Gdk.Screen.get_default(), prov,
+                                                 Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
+        self.win = w = Gtk.ApplicationWindow(application=self, title="Home")
+        w.set_name("home")
+        w.set_type_hint(Gdk.WindowTypeHint.DESKTOP)
+        w.set_skip_taskbar_hint(True)
+        w.set_skip_pager_hint(True)
+        w.set_decorated(False)
+        w.stick()
+        w.set_keep_below(True)
+        self.fit_screen()
+        Gdk.Screen.get_default().connect("size-changed", lambda *_: self.fit_screen())
+
+        self.overlay = Gtk.Overlay()
+        self.bg = Gtk.Image()
+        self.overlay.add(self.bg)
+        w.add(self.overlay)
+        w.connect("size-allocate", self.on_size)
+
+        col = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
+        self.overlay.add_overlay(col)
+
+        top = Gtk.Box(margin_top=22, margin_bottom=10, halign=Gtk.Align.CENTER)
+        self.search = Gtk.SearchEntry(placeholder_text=S[0], width_chars=42)
+        self.search.get_style_context().add_class("search")
+        self.search.connect("search-changed", lambda *_: self.flow.invalidate_filter())
+        self.search.connect("activate", self.on_search_enter)
+        top.pack_start(self.search, False, False, 0)
+        col.pack_start(top, False, False, 0)
+
+        sw = Gtk.ScrolledWindow(hscrollbar_policy=Gtk.PolicyType.NEVER)
+        self.flow = Gtk.FlowBox(selection_mode=Gtk.SelectionMode.NONE, homogeneous=True,
+                                column_spacing=6, row_spacing=10, valign=Gtk.Align.START,
+                                halign=Gtk.Align.CENTER, margin=10, max_children_per_line=8,
+                                min_children_per_line=3)
+        self.flow.set_filter_func(self.filter_app)
+        sw.add(self.flow)
+        col.pack_start(sw, True, True, 0)
+
+        self.dock = Gtk.Box(spacing=24, halign=Gtk.Align.FILL)
+        self.dock_inner = Gtk.Box(spacing=26, halign=Gtk.Align.CENTER)
+        self.dock.set_center_widget(self.dock_inner)
+        self.dock.get_style_context().add_class("dock")
+        col.pack_end(self.dock, False, False, 0)
+
+        w.add_events(Gdk.EventMask.BUTTON_PRESS_MASK)   # right-click on empty space
+        w.connect("button-press-event", self.on_bg_click)
+
+        self.refresh()
+        mon = Gio.AppInfoMonitor.get()
+        mon.connect("changed", lambda *_: GLib.timeout_add(400, self.refresh_once))
+        self._pending = False
+        w.show_all()
+        self.search.grab_focus()
+
+    # ---------- layout ----------
+    def fit_screen(self):
+        scr = Gdk.Screen.get_default()
+        self.win.move(0, 0)
+        self.win.set_default_size(scr.get_width(), scr.get_height())
+        self.win.resize(scr.get_width(), scr.get_height())
+
+    def on_size(self, _w, alloc):
+        key = (alloc.width, alloc.height, wallpaper())
+        if getattr(self, "_bgkey", None) == key:
+            return
+        self._bgkey = key
+        try:
+            pix = GdkPixbuf.Pixbuf.new_from_file(wallpaper())
+            sw, sh = pix.get_width(), pix.get_height()
+            sc = max(alloc.width / sw, alloc.height / sh)
+            pix = pix.scale_simple(max(1, int(sw * sc)), max(1, int(sh * sc)),
+                                   GdkPixbuf.InterpType.BILINEAR)
+            x = (pix.get_width() - alloc.width) // 2
+            y = (pix.get_height() - alloc.height) // 2
+            pix = pix.new_subpixbuf(max(0, x), max(0, y), min(alloc.width, pix.get_width()),
+                                    min(alloc.height, pix.get_height()))
+            GLib.idle_add(self.bg.set_from_pixbuf, pix)
+        except GLib.Error:
+            pass
+
+    def app_button(self, info, size=ICON, dock=False):
+        b = Gtk.Button()
+        b.get_style_context().add_class("app")
+        box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=4)
+        box.pack_start(icon_image(info, size), False, False, 0)
+        name = info.get_display_name()
+        lbl = Gtk.Label(label=name, max_width_chars=12, ellipsize=3, justify=Gtk.Justification.CENTER)
+        box.pack_start(lbl, False, False, 0)
+        b.add(box)
+        b.set_size_request(TILE if not dock else 84, -1)
+        b.set_tooltip_text(info.get_description() or name)
+        b.connect("clicked", lambda *_: self.launch(info))
+        b.connect("button-press-event", lambda w, e: self.on_app_menu(e, info))
+        b.app_info = info
+        return b
+
+    def refresh_once(self):
+        self.refresh()
+        return False
+
+    def refresh(self):
+        for c in self.flow.get_children():
+            self.flow.remove(c)
+        self.apps = all_apps()
+        for info in self.apps:
+            self.flow.add(self.app_button(info))
+        for c in self.dock_inner.get_children():
+            self.dock_inner.remove(c)
+        by_id = {i.get_id(): i for i in Gio.AppInfo.get_all() if isinstance(i, Gio.DesktopAppInfo)}
+        for aid in load_dock():
+            if aid in by_id:
+                self.dock_inner.pack_start(self.app_button(by_id[aid], 52, dock=True), False, False, 0)
+        self.flow.show_all()
+        self.dock.show_all()
+
+    def filter_app(self, child):
+        q = self.search.get_text().strip().lower()
+        if not q:
+            return True
+        info = child.get_child().app_info
+        text = " ".join(filter(None, [info.get_display_name(), info.get_name(),
+                                      info.get_description() or "",
+                                      " ".join(info.get_keywords() or [])])).lower()
+        return q in text
+
+    # ---------- actions ----------
+    def launch(self, info):
+        try:
+            info.launch([], Gdk.Display.get_default().get_app_launch_context())
+        except GLib.Error as e:
+            print("launch failed:", e, file=sys.stderr)
+        self.search.set_text("")
+
+    def on_search_enter(self, entry):
+        q = entry.get_text().strip()
+        if not q:
+            return
+        visible = [c for c in self.flow.get_children() if self.filter_app(c)]
+        if visible:
+            self.launch(visible[0].get_child().app_info)
+            return
+        if " " not in q and "." in q:
+            url = q if "://" in q else "https://" + q
+        else:
+            url = "https://duckduckgo.com/?q=" + urllib.parse.quote(q)
+        subprocess.Popen(["firefox-esr", url], start_new_session=True)
+        entry.set_text("")
+
+    def on_app_menu(self, ev, info):
+        if ev.button != 3:
+            return False
+        m = Gtk.Menu()
+        dock = load_dock()
+        aid = info.get_id()
+        if aid in dock:
+            it = Gtk.MenuItem(label=S[2])
+            it.connect("activate", lambda *_: (save_dock([d for d in dock if d != aid]), self.refresh()))
+        else:
+            it = Gtk.MenuItem(label=S[1])
+            it.connect("activate", lambda *_: (save_dock(dock + [aid]), self.refresh()))
+        m.append(it)
+        fx = info.get_string("X-FirefoxOS-App")
+        web = info.get_string("X-FirefoxOS-WebApp")
+        flat = info.get_filename() and "/flatpak/" in info.get_filename()
+        if fx or web or flat:
+            un = Gtk.MenuItem(label=S[3])
+            un.connect("activate", lambda *_: self.uninstall(info, fx, web, flat))
+            m.append(un)
+        m.show_all()
+        m.popup_at_pointer(ev)
+        return True
+
+    def uninstall(self, info, fx, web, flat):
+        if fx:
+            subprocess.call(["fxos-appinstall", "--remove", fx])
+        elif web:
+            try:
+                os.remove(info.get_filename())
+            except OSError:
+                pass
+        elif flat:
+            subprocess.Popen(["flatpak", "uninstall", "--user", "-y", "--noninteractive",
+                              info.get_id().replace(".desktop", "")])
+        GLib.timeout_add(600, self.refresh_once)
+
+    def on_bg_click(self, _w, ev):
+        if ev.button != 3:
+            return False
+        m = Gtk.Menu()
+        it = Gtk.MenuItem(label=S[4])
+        it.connect("activate", self.pick_wallpaper)
+        m.append(it)
+        m.show_all()
+        m.popup_at_pointer(ev)
+        return True
+
+    def pick_wallpaper(self, *_):
+        dlg = Gtk.FileChooserDialog(title=S[4], transient_for=self.win,
+                                    action=Gtk.FileChooserAction.OPEN)
+        dlg.add_buttons("_Cancel", Gtk.ResponseType.CANCEL, "_OK", Gtk.ResponseType.OK)
+        f = Gtk.FileFilter()
+        f.add_pixbuf_formats()
+        dlg.add_filter(f)
+        dlg.set_current_folder("/usr/share/firefoxos/wallpapers")
+        if dlg.run() == Gtk.ResponseType.OK:
+            os.makedirs(CONF_DIR, exist_ok=True)
+            with open(WALL_FILE, "w") as fh:
+                fh.write(dlg.get_filename())
+            self._bgkey = None
+            self.on_size(self.win, self.win.get_allocation())
+        dlg.destroy()
+
+    def show_home(self):
+        # minimise everything so the home screen is visible, then focus search
+        subprocess.call(["wmctrl", "-k", "on"])
+        self.win.present()
+        self.search.set_text("")
+        self.search.grab_focus()
+
+
+if __name__ == "__main__":
+    Home().run([sys.argv[0]])

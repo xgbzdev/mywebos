@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=Home
+Name[it]=Home
+Comment=Show the Firefox OS home screen
+Exec=fxos-home
+Icon=/usr/share/firefoxos/icons/firefoxos.png
+NoDisplay=true

@@ -204,4 +204,26 @@ echo "Firefox OS 2.0 \\n \\l" > /etc/issue
 echo "Firefox OS 2.0" > /etc/issue.net
 # Calamares writes os-release name into GRUB on install via this branding key:
 [ -f "$B/branding.desc" ] && sed -i -E 's/^(\s*bootloaderEntryName:).*/\1 "Firefox OS"/' "$B/branding.desc"
+# ==== Firefox OS 2.x-style build ============================================
+# File type for Firefox OS app manifests
+update-mime-database /usr/share/mime 2>/dev/null || true
+update-desktop-database /usr/share/applications 2>/dev/null || true
+
+# Animated boot splash
+if command -v plymouth-set-default-theme >/dev/null 2>&1; then
+    plymouth-set-default-theme firefoxos || true
+fi
+# Quiet, branded boot on the installed system
+cat > /etc/default/grub.d/90-firefoxos-quiet.cfg <<'G'
+GRUB_CMDLINE_LINUX_DEFAULT="quiet splash loglevel=3"
+GRUB_TIMEOUT=3
+GRUB_BACKGROUND=/usr/share/firefoxos/wallpapers/grub.png
+GRUB_DISABLE_OS_PROBER=false
+G
+if [ -f /etc/grub.d/10_linux ]; then
+    sed -i -e '/gettext_printf "Loading Linux %s ..."/d' \
+           -e '/gettext_printf "Loading initial ramdisk ..."/d' /etc/grub.d/10_linux
+fi
+# rebuild the initramfs so it contains the splash
+update-initramfs -u -k all || true
 exit 0

@@ -25,6 +25,11 @@ for f in thunar firefox-esr fxos-marketplace; do
 done
 # Some installer launchers appear a little later: remove them for a while
 ( for i in 1 2 3 4 5 6; do sleep 10; rm -f "$DESK"/*install-debian*.desktop "$DESK"/calamares*.desktop; done ) &
+# Preinstall the sample Firefox OS app once
+if [ ! -f "$HOME/.config/firefoxos/sample-installed" ]; then
+    fxos-appinstall --quiet /usr/share/firefoxos/sample-apps/checklist.zip && \
+        mkdir -p "$HOME/.config/firefoxos" && touch "$HOME/.config/firefoxos/sample-installed"
+fi
 sleep 2
 # Set the Firefox OS wallpaper on every monitor xfdesktop knows about
 for prop in $(xfconf-query -c xfce4-desktop -l 2>/dev/null | grep -E "last-image$"); do

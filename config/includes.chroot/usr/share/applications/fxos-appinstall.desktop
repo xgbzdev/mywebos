@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=Install Firefox OS app
+Name[it]=Installa app Firefox OS
+Exec=fxos-appinstall %F
+Icon=system-software-install
+MimeType=application/x-web-app-manifest+json;application/zip;
+NoDisplay=true

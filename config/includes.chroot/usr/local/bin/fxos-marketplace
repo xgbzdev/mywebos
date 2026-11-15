@@ -7,10 +7,15 @@ import subprocess
 import threading
 from xml.sax.saxutils import escape
 
+import sys
+
 import gi
 
 gi.require_version("Gtk", "3.0")
 from gi.repository import Gtk, GLib, Gdk  # noqa: E402
+
+sys.path.insert(0, "/usr/lib/firefoxos")
+import fxosapps  # noqa: E402
 
 CATALOG = "/usr/share/firefoxos/marketplace/catalog.json"
 HOME = os.path.expanduser("~")
@@ -23,12 +28,14 @@ L = {
                install="Install", remove="Remove", open="Open", search="Search Flathub…",
                add="Add any website as an app", name="Name", url="Address (https://…)",
                more="More Linux apps (GNOME Software)", working="Working…", done="Installed",
-               fail="Failed – check your internet connection"),
+               fail="Failed – check your internet connection",
+               fxos="Install a Firefox OS app (manifest.webapp)", fxfile="From file (.zip)…", fxurl="https://…/manifest.webapp"),
     "it": dict(title="Marketplace", web="App Firefox OS", linux="App Linux", installed="Installate",
                install="Installa", remove="Rimuovi", open="Apri", search="Cerca su Flathub…",
                add="Aggiungi un sito come app", name="Nome", url="Indirizzo (https://…)",
                more="Altre app Linux (GNOME Software)", working="Attendi…", done="Installata",
-               fail="Errore – controlla la connessione"),
+               fail="Errore – controlla la connessione",
+               fxos="Installa un'app Firefox OS (manifest.webapp)", fxfile="Da file (.zip)…", fxurl="https://…/manifest.webapp"),
     "es": dict(title="Marketplace", web="Apps de Firefox OS", linux="Apps de Linux", installed="Instaladas",
                install="Instalar", remove="Quitar", open="Abrir", search="Buscar en Flathub…",
                add="Añadir una web como app", name="Nombre", url="Dirección (https://…)",
@@ -60,7 +67,8 @@ L = {
                more="Więcej aplikacji Linux (GNOME Software)", working="Proszę czekać…", done="Zainstalowano",
                fail="Błąd – sprawdź połączenie"),
 }
-S = L.get(os.environ.get("LANG", "en")[:2], L["en"])
+S = dict(L["en"])
+S.update(L.get(os.environ.get("LANG", "en")[:2], {}))
 
 CSS = b"""
 .hero { background-image: linear-gradient(90deg, #ff9a1f, #e8481c); color: white; padding: 14px 18px; font-size: 16pt; }
@@ -202,6 +210,7 @@ class Market(Gtk.Window):
             flow.add(self.card(app["name"], "%s · %s" % (app.get("category", ""), app.get("desc", "")),
                                btns, app.get("color")))
         flow.add(self.add_custom_card())
+        flow.add(self.fxos_card())
         flow.show_all()
         self.refresh_installed(cat)
 
@@ -232,6 +241,45 @@ class Market(Gtk.Window):
             self.refresh()
         b.connect("clicked", add)
         c.pack_end(b, False, False, 0)
+        return c
+
+    def fxos_card(self):
+        c = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=4)
+        c.get_style_context().add_class("card")
+        c.pack_start(Gtk.Label(label=S["fxos"], xalign=0, wrap=True), False, False, 0)
+        url = Gtk.Entry(placeholder_text=S["fxurl"])
+        c.pack_start(url, False, False, 0)
+        row = Gtk.Box(spacing=6)
+        fb = Gtk.Button(label=S["fxfile"])
+        ib = Gtk.Button(label=S["install"])
+        ib.get_style_context().add_class("primary")
+        row.pack_start(fb, False, False, 0)
+        row.pack_end(ib, False, False, 0)
+        c.pack_end(row, False, False, 0)
+
+        def run(src):
+            def work():
+                try:
+                    meta = fxosapps.install(src)
+                    GLib.idle_add(notify, meta["name"], S["done"])
+                except Exception as e:
+                    GLib.idle_add(notify, S["fxos"], str(e))
+                GLib.idle_add(self.refresh)
+            threading.Thread(target=work, daemon=True).start()
+
+        def pick(_b):
+            dlg = Gtk.FileChooserDialog(title=S["fxfile"], transient_for=self, action=Gtk.FileChooserAction.OPEN)
+            dlg.add_buttons("_Cancel", Gtk.ResponseType.CANCEL, "_OK", Gtk.ResponseType.OK)
+            f = Gtk.FileFilter()
+            f.set_name("Firefox OS apps")
+            for pat in ("*.zip", "manifest.webapp", "*.webapp"):
+                f.add_pattern(pat)
+            dlg.add_filter(f)
+            if dlg.run() == Gtk.ResponseType.OK:
+                run(dlg.get_filename())
+            dlg.destroy()
+        fb.connect("clicked", pick)
+        ib.connect("clicked", lambda _b: url.get_text().strip() and run(url.get_text().strip()))
         return c
 
     # ---- linux apps ----
@@ -309,6 +357,10 @@ class Market(Gtk.Window):
                 flow.add(self.card(app["name"], S["web"],
                                    [(S["remove"], lambda b, a=app: (remove_web(a["id"]), self.refresh()), False)],
                                    app.get("color")))
+        for a in fxosapps.list_apps():
+            flow.add(self.card(a["name"], "Firefox OS app · %s %s" % (a["type"], a.get("version", "")),
+                               [(S["open"], lambda b, i=a["id"]: subprocess.Popen(["fxos-apprun", i]), False),
+                                (S["remove"], lambda b, i=a["id"]: (fxosapps.uninstall(i), self.refresh()), False)]))
         for app_id in sorted(flatpak_installed()):
             flow.add(self.card(app_id.split(".")[-1], app_id,
                                [(S["remove"], lambda b, i=app_id: self.flatpak(b, "uninstall", {"id": i, "name": i}), False)]))

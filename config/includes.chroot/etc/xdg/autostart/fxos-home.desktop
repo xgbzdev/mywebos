@@ -1,0 +1,6 @@
+[Desktop Entry]
+Type=Application
+Name=Firefox OS home screen
+Exec=sh -c 'while true; do fxos-home; sleep 1; done'
+NoDisplay=true
+X-GNOME-Autostart-Phase=Desktop

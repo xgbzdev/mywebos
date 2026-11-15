@@ -1,0 +1,41 @@
+#!/usr/bin/env python3
+"""Run an installed Firefox OS app in its own app-style Firefox window."""
+import os
+import sys
+
+sys.path.insert(0, "/usr/lib/firefoxos")
+import fxosapps  # noqa: E402
+
+USER_JS = """user_pref("toolkit.legacyUserProfileCustomizations.stylesheets", true);
+user_pref("browser.shell.checkDefaultBrowser", false);
+user_pref("browser.startup.homepage_override.mstone", "ignore");
+user_pref("datareporting.policy.dataSubmissionPolicyBypassNotification", true);
+user_pref("browser.aboutwelcome.enabled", false);
+user_pref("browser.tabs.inTitlebar", 0);
+user_pref("security.fileuri.strict_origin_policy", false);
+user_pref("dom.webnotifications.enabled", true);
+user_pref("dom.ipc.processCount", 1);
+user_pref("browser.sessionstore.resume_from_crash", false);
+"""
+USER_CHROME = """#TabsToolbar, #nav-bar, #PersonalToolbar, #sidebar-box,
+#notifications-toolbar { visibility: collapse !important; }
+"""
+
+if len(sys.argv) < 2:
+    sys.exit("usage: fxos-apprun <app-id>")
+meta = fxosapps.get(sys.argv[1])
+prof = os.path.join(fxosapps.APPS, meta["id"], "profile")
+if not os.path.isdir(prof):
+    os.makedirs(os.path.join(prof, "chrome"))
+    with open(os.path.join(prof, "user.js"), "w") as f:
+        f.write(USER_JS)
+    with open(os.path.join(prof, "chrome", "userChrome.css"), "w") as f:
+        f.write(USER_CHROME)
+cmd = ["firefox-esr", "--no-remote", "--class", "fxos-app-" + meta["id"],
+       "--name", "fxos-app-" + meta["id"], "--profile", prof]
+if meta.get("fullscreen"):
+    cmd.append("--kiosk")
+elif "landscape" not in (meta.get("orientation") or ""):
+    cmd += ["-width", "420", "-height", "760"]      # phone-shaped window
+cmd.append(meta["launch_url"])
+os.execvp(cmd[0], cmd)

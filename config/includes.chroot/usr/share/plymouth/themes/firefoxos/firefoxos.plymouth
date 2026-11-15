@@ -1,0 +1,8 @@
+[Plymouth Theme]
+Name=Firefox OS
+Description=Animated Firefox OS boot splash
+ModuleName=script
+
+[script]
+ImageDir=/usr/share/plymouth/themes/firefoxos
+ScriptFile=/usr/share/plymouth/themes/firefoxos/firefoxos.script

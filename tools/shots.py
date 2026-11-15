@@ -39,19 +39,27 @@ def launch(query, name, wait):
     key("ret"); shot(name, wait)
 
 subprocess.call(["mkdir", "-p", OUT])
+
+def home_launch(query, name, wait):
+    key("meta_l", 3)                       # Super -> home screen, search focused
+    type_text(query); time.sleep(2)
+    key("ret"); shot(name, wait)
+
 shot("boot-menu", 8)
-key("ret")                                 # start "Live system"
-shot("welcome", 150)                       # live desktop + welcome wizard
-key("right", 3)                            # select "Italiano" -> wizard switches language
-shot("welcome-italiano", 3)
-key("alt-f4", 3)                           # close wizard
-key("meta_l"); shot("start-menu", 4)
-key("esc", 2)
-launch("marketplace", "marketplace", 25)
-key("alt-f4", 3)
-launch("emul", "emulators", 20)
-key("alt-f4", 3)
-launch("firefox", "firefox", 60)
-key("alt-f4", 3)
-key("ctrl-alt-t", 8)
-type_text("ls /usr/sbin/grub-install /usr/sbin/grub-mkconfig /usr/sbin/mkfs.vfat /usr/bin/unsquashfs /usr/share/dict/words; ls -R /run/live/medium/pool | grep grub"); key("ret"); shot("installer-check", 6)
+key("ret")                                 # start "Try Firefox OS"
+shot("splash-1", 10)
+shot("splash-2", 4)
+shot("splash-3", 6)
+shot("welcome", 130)                       # home screen + welcome wizard
+key("alt-f4", 4)                           # close wizard
+key("meta_l", 3); shot("home", 3)
+type_text("check"); shot("home-search", 3)
+key("ret"); shot("fxos-app-checklist", 25)
+key("alt-f4", 4)
+home_launch("marketplace", "marketplace", 25)
+key("alt-f4", 4)
+home_launch("emul", "emulators", 20)
+key("alt-f4", 4)
+home_launch("firefox", "firefox", 60)
+key("alt-f4", 4)
+key("meta_l", 3); shot("home-again", 3)
