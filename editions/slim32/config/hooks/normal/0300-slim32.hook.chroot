@@ -16,9 +16,10 @@ keys = """
 """
 s = s.replace("</keyboard>", keys + "  </keyboard>", 1)
 apps = """
-    <application title="B2L Home*">
+    <application class="B2LHome">
       <decor>no</decor><maximized>yes</maximized><layer>below</layer>
       <skip_taskbar>yes</skip_taskbar><skip_pager>yes</skip_pager><focus>yes</focus>
+      <iconic>no</iconic>
     </application>
 """
 if "<applications>" in s:
@@ -100,12 +101,6 @@ os.makedirs(os.path.dirname(p), exist_ok=True)
 json.dump(d, open(p, "w"), indent=2)
 P
 
-# ---- Autoconfig: B2L window behaviour (see /usr/lib/firefox-esr/b2l.cfg)
-cat > /usr/lib/firefox-esr/defaults/pref/b2l-autoconfig.js <<'J'
-pref("general.config.filename", "b2l.cfg");
-pref("general.config.obscure_value", 0);
-pref("general.config.sandbox_enabled", false);
-J
 systemctl enable b2l-memlog.service || true
 
 # ---- More compressed RAM for 512 MB machines

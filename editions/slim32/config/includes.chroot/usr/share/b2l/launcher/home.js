@@ -4,35 +4,35 @@
   var $ = function (id) { return document.getElementById(id); };
   var LANG = (document.documentElement.lang || "en").slice(0, 2);
   var T = {
-    en: { search: "Search apps or the web", newFolder: "New folder", folder: "Folder", addTo: "Move to “%s”",
+    en: { openApps: "Open apps", noApps: "No open apps", search: "Search apps or the web", newFolder: "New folder", folder: "Folder", addTo: "Move to “%s”",
           outOfFolder: "Move out of folder", toDock: "Add to dock", fromDock: "Remove from dock",
           uninstall: "Uninstall", uninstallQ: "Uninstall “%s”?", rename: "Rename folder", delFolder: "Remove folder",
           cancel: "Cancel", dockFull: "The dock is full (max 6).", cantOpen: "Couldn't open “%s”." },
-    it: { search: "Cerca app o nel web", newFolder: "Nuova cartella", folder: "Cartella", addTo: "Sposta in “%s”",
+    it: { openApps: "App aperte", noApps: "Nessuna app aperta", search: "Cerca app o nel web", newFolder: "Nuova cartella", folder: "Cartella", addTo: "Sposta in “%s”",
           outOfFolder: "Togli dalla cartella", toDock: "Aggiungi al dock", fromDock: "Togli dal dock",
           uninstall: "Disinstalla", uninstallQ: "Disinstallare “%s”?", rename: "Rinomina cartella", delFolder: "Rimuovi cartella",
           cancel: "Annulla", dockFull: "Il dock è pieno (max 6).", cantOpen: "Impossibile aprire “%s”." },
-    el: { search: "Αναζήτηση εφαρμογών ή στο web", newFolder: "Νέος φάκελος", folder: "Φάκελος", addTo: "Μετακίνηση στο «%s»",
+    el: { openApps: "Ανοιχτές εφαρμογές", noApps: "Καμία ανοιχτή εφαρμογή", search: "Αναζήτηση εφαρμογών ή στο web", newFolder: "Νέος φάκελος", folder: "Φάκελος", addTo: "Μετακίνηση στο «%s»",
           outOfFolder: "Έξω από τον φάκελο", toDock: "Προσθήκη στο dock", fromDock: "Αφαίρεση από το dock",
           uninstall: "Απεγκατάσταση", uninstallQ: "Απεγκατάσταση του «%s»;", rename: "Μετονομασία φακέλου", delFolder: "Αφαίρεση φακέλου",
           cancel: "Ακύρωση", dockFull: "Το dock είναι γεμάτο (έως 6).", cantOpen: "Δεν ήταν δυνατό να ανοίξει το «%s»." },
-    es: { search: "Busca apps o en la web", newFolder: "Nueva carpeta", folder: "Carpeta", addTo: "Mover a “%s”",
+    es: { openApps: "Apps abiertas", noApps: "No hay apps abiertas", search: "Busca apps o en la web", newFolder: "Nueva carpeta", folder: "Carpeta", addTo: "Mover a “%s”",
           outOfFolder: "Sacar de la carpeta", toDock: "Añadir al dock", fromDock: "Quitar del dock",
           uninstall: "Desinstalar", uninstallQ: "¿Desinstalar “%s”?", rename: "Renombrar carpeta", delFolder: "Quitar carpeta",
           cancel: "Cancelar", dockFull: "El dock está lleno (máx. 6).", cantOpen: "No se pudo abrir “%s”." },
-    fr: { search: "Rechercher des applis ou sur le web", newFolder: "Nouveau dossier", folder: "Dossier", addTo: "Déplacer dans « %s »",
+    fr: { openApps: "Applis ouvertes", noApps: "Aucune appli ouverte", search: "Rechercher des applis ou sur le web", newFolder: "Nouveau dossier", folder: "Dossier", addTo: "Déplacer dans « %s »",
           outOfFolder: "Sortir du dossier", toDock: "Ajouter au dock", fromDock: "Retirer du dock",
           uninstall: "Désinstaller", uninstallQ: "Désinstaller « %s » ?", rename: "Renommer le dossier", delFolder: "Supprimer le dossier",
           cancel: "Annuler", dockFull: "Le dock est plein (6 max).", cantOpen: "Impossible d'ouvrir « %s »." },
-    de: { search: "Apps oder Web durchsuchen", newFolder: "Neuer Ordner", folder: "Ordner", addTo: "In „%s“ verschieben",
+    de: { openApps: "Offene Apps", noApps: "Keine offenen Apps", search: "Apps oder Web durchsuchen", newFolder: "Neuer Ordner", folder: "Ordner", addTo: "In „%s“ verschieben",
           outOfFolder: "Aus dem Ordner nehmen", toDock: "Zum Dock hinzufügen", fromDock: "Aus dem Dock entfernen",
           uninstall: "Deinstallieren", uninstallQ: "„%s“ deinstallieren?", rename: "Ordner umbenennen", delFolder: "Ordner entfernen",
           cancel: "Abbrechen", dockFull: "Das Dock ist voll (max. 6).", cantOpen: "„%s“ konnte nicht geöffnet werden." },
-    pt: { search: "Pesquisar apps ou na web", newFolder: "Nova pasta", folder: "Pasta", addTo: "Mover para “%s”",
+    pt: { openApps: "Apps abertas", noApps: "Nenhuma app aberta", search: "Pesquisar apps ou na web", newFolder: "Nova pasta", folder: "Pasta", addTo: "Mover para “%s”",
           outOfFolder: "Tirar da pasta", toDock: "Adicionar à dock", fromDock: "Remover da dock",
           uninstall: "Desinstalar", uninstallQ: "Desinstalar “%s”?", rename: "Mudar nome da pasta", delFolder: "Remover pasta",
           cancel: "Cancelar", dockFull: "A dock está cheia (máx. 6).", cantOpen: "Não foi possível abrir “%s”." },
-    pl: { search: "Szukaj aplikacji lub w sieci", newFolder: "Nowy folder", folder: "Folder", addTo: "Przenieś do „%s”",
+    pl: { openApps: "Otwarte aplikacje", noApps: "Brak otwartych aplikacji", search: "Szukaj aplikacji lub w sieci", newFolder: "Nowy folder", folder: "Folder", addTo: "Przenieś do „%s”",
           outOfFolder: "Wyjmij z folderu", toDock: "Dodaj do docka", fromDock: "Usuń z docka",
           uninstall: "Odinstaluj", uninstallQ: "Odinstalować „%s”?", rename: "Zmień nazwę folderu", delFolder: "Usuń folder",
           cancel: "Anuluj", dockFull: "Dock jest pełny (maks. 6).", cantOpen: "Nie można otworzyć „%s”." }
@@ -145,20 +145,79 @@
   }
 
   /* ---------- opening apps ---------- */
+  var running = [], current = null;          /* Firefox OS apps open inside the home screen */
   function open(id) {
     var a = apps[id];
     if (!a) { return; }
     closeOverlays();
-    if (a.url) {
-      /* Web apps and Firefox OS apps open in this same Firefox (one engine for
-         everything), in their own toolbar-less window. */
-      var w = a.portrait ? 420 : Math.min(screen.availWidth, 1280), h = screen.availHeight;
-      var x = Math.max(0, Math.round((screen.availWidth - w) / 2));
-      var win = window.open(a.url, "app-" + id, "popup=yes,width=" + w + ",height=" + h + ",left=" + x + ",top=0");
-      if (win) { win.focus(); } else { toast(t("cantOpen", a.name)); }
+    if (a.kind === "fxos" && /^http:\/\/[a-z0-9-]+\.localhost:8090\//.test(a.url)) { showApp(id); return; }
+    if (a.url) {                                /* websites and hosted apps: in the Firefox browser */
+      api("POST", "/api/browse", { url: a.url }, function (st) { if (st !== 200) { toast(t("cantOpen", a.name)); } });
       return;
     }
     api("POST", "/api/launch", { id: id }, function (st) { if (st !== 200) { toast(t("cantOpen", a.name)); } });
+  }
+  function frameOf(id) { return document.querySelector('iframe[data-app="' + id + '"]'); }
+  function showApp(id) {
+    var a = apps[id], f = frameOf(id);
+    if (!f) {
+      f = document.createElement("iframe");
+      f.setAttribute("data-app", id);
+      /* each app keeps its own origin (<id>.localhost) and cannot touch the home screen */
+      f.setAttribute("sandbox", "allow-scripts allow-same-origin allow-forms allow-popups allow-modals allow-downloads allow-popups-to-escape-sandbox");
+      f.setAttribute("allow", "geolocation; autoplay; fullscreen; clipboard-write");
+      f.className = a.portrait ? "phone" : "full";
+      f.src = a.url;
+      $("frames").appendChild(f);
+      running.push(id);
+    }
+    Array.prototype.forEach.call($("frames").children, function (x) { x.style.visibility = x === f ? "visible" : "hidden"; });
+    current = id;
+    $("app-title").textContent = a.name;
+    $("applayer").classList.remove("hidden");
+    updateCardsBtn();
+    try { f.focus(); } catch (e) {}
+  }
+  function goHome() {
+    $("applayer").classList.add("hidden"); $("cards").classList.add("hidden");
+    current = null; closeOverlays(); updateCardsBtn(); $("search").focus();
+  }
+  function closeApp(id) {
+    var f = frameOf(id);
+    if (f) { f.src = "about:blank"; f.parentNode.removeChild(f); }  /* frees its memory */
+    running = running.filter(function (x) { return x !== id; });
+    if (current === id) { goHome(); }
+    updateCardsBtn();
+  }
+  function updateCardsBtn() {
+    var b = $("cards-btn");
+    b.textContent = "❐ " + running.length;
+    b.classList.toggle("hidden", running.length === 0);
+  }
+  function showCards() {
+    var list = $("card-list"); list.innerHTML = "";
+    $("cards-title").textContent = running.length ? t("openApps") : t("noApps");
+    running.forEach(function (id) {
+      var c = document.createElement("div"); c.className = "card";
+      c.innerHTML = '<button class="x" aria-label="Close">×</button><img alt=""><span></span>';
+      c.querySelector("img").src = iconUrl(id);
+      c.querySelector("span").textContent = apps[id] ? apps[id].name : id;
+      c.onclick = function () { $("cards").classList.add("hidden"); showApp(id); };
+      c.querySelector(".x").onclick = function (e) { e.stopPropagation(); closeApp(id); showCards(); };
+      list.appendChild(c);
+    });
+    $("cards").classList.remove("hidden");
+  }
+  $("app-home").onclick = goHome;
+  $("app-close").onclick = function () { if (current) { closeApp(current); } };
+  $("app-cards").onclick = showCards;
+  $("cards-btn").onclick = showCards;
+  $("cards").onclick = function (e) { if (e.target === this) { this.classList.add("hidden"); } };
+
+  /* Start button / Super key (sent by the launcher service) */
+  if (window.EventSource) {
+    var es = new EventSource("/api/events");
+    es.addEventListener("home", function () { goHome(); load(); });
   }
 
   /* ---------- folders ---------- */
@@ -251,6 +310,7 @@
     if (a.removable) {
       b.push([t("uninstall"), function () {
         sheet(t("uninstallQ", a.name), [[t("uninstall"), function () {
+          closeApp(id);
           api("POST", "/api/uninstall", { id: id }, function () { removeEverywhere(id); cleanup(); saveLayout(); load(); });
         }, "danger"]]);
       }, "danger"]);
@@ -296,13 +356,13 @@
     else if (q) {
       var url = (/^[^\s]+\.[a-z]{2,}(\/.*)?$/i.test(q)) ? (/^https?:/.test(q) ? q : "https://" + q)
         : "https://duckduckgo.com/?q=" + encodeURIComponent(q);
-      window.open(url, "_blank");
+      api("POST", "/api/browse", { url: url });
     }
     this.value = ""; render();
   };
   document.addEventListener("keydown", function (e) {
-    if (e.key === "Escape") { closeOverlays(); }
-    else if ((document.activeElement === document.body || /tile/.test(document.activeElement.className)) && e.key.length === 1 && e.key !== " " && !e.ctrlKey && !e.altKey) { $("search").focus(); }
+    if (e.key === "Escape") { if (!$("cards").classList.contains("hidden")) { $("cards").classList.add("hidden"); } else { closeOverlays(); } }
+    else if (!current && (document.activeElement === document.body || /tile/.test(document.activeElement.className)) && e.key.length === 1 && e.key !== " " && !e.ctrlKey && !e.altKey) { $("search").focus(); }
   });
 
   var tt;

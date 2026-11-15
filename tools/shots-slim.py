@@ -41,30 +41,21 @@ shot("welcome", 200)            # 512 MB + emulated disk: give it time
 key("alt-f4", 6)                # close the welcome wizard
 shot("home", 15)
 
-# 1. memory right after start-up (home screen open)
-key("ctrl-alt-t", 35)
+# 1. a Firefox OS app inside the home screen
+type_text("firecloud"); shot("search", 2)
+key("ret", 30)
+shot("firecloud-in-home", 2)
+
+# 2. Start button (Super key) -> home, app keeps running (card view button)
+key("meta_l", 6)
+shot("home-with-app-running", 2)
+
+# 3. a second app, then the card view
+type_text("checklist"); key("ret", 20)
+shot("checklist-in-home", 2)
+
+# 4. memory with two apps open
+key("ctrl-alt-t", 30)
 shot("terminal-open", 1)
 type_text("clear; free -m; ps -eo rss,comm --sort=-rss | head -n 9"); key("ret", 4)
-shot("memory-idle", 1)
-
-# 2. a folder, stored the same way the home screen stores it
-type_text('python3 -c "import json,os;p=os.path.expanduser(\'~/.config/firefoxos/launcher.json\');'
-          'd=json.load(open(p));d[\'folders\'][\'folder-tools\']={\'name\':\'Tools\','
-          '\'apps\':[\'galculator\',\'org.xfce.mousepad\',\'xarchiver\',\'lxterminal\']};'
-          'd[\'items\'].insert(0,\'folder-tools\');json.dump(d,open(p,\'w\'))"')
-key("ret", 2)
-key("meta_l", 12)               # Super = home (reloads the layout when focused)
-shot("home-folder", 2)
-key("tab", 1); key("ret", 3)    # first icon = the folder
-shot("folder-open", 2)
-key("esc", 2)
-
-# 3. a Firefox OS app (FireCloud) in the shared engine
-type_text("firecloud"); shot("search", 2)
-key("ret", 60)
-shot("firecloud", 2)
-
-# 4. memory with FireCloud open
-key("ctrl-alt-t", 35)
-type_text("clear; free -m; ps -eo rss,comm --sort=-rss | head -n 9"); key("ret", 4)
-shot("memory-firecloud", 1)
+shot("memory-two-apps", 1)

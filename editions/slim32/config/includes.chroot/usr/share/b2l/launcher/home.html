@@ -8,10 +8,28 @@
 <body>
 <header>
   <input id="search" type="search" autocomplete="off" spellcheck="false">
+  <button id="cards-btn" class="cards-btn hidden" aria-label="Open apps"></button>
 </header>
 
 <main id="grid" class="grid"></main>
 <footer id="dock" class="dock"></footer>
+
+<!-- running Firefox OS apps: full screen inside the home screen -->
+<div id="applayer" class="applayer hidden">
+  <div class="appbar">
+    <button id="app-home" class="ab" aria-label="Home">⌂</button>
+    <span id="app-title"></span>
+    <button id="app-cards" class="ab" aria-label="Open apps">❐</button>
+    <button id="app-close" class="ab" aria-label="Close">×</button>
+  </div>
+  <div id="frames" class="frames"></div>
+</div>
+
+<!-- card view (open apps) -->
+<div id="cards" class="overlay cards hidden">
+  <p id="cards-title"></p>
+  <div id="card-list" class="card-list"></div>
+</div>
 
 <!-- open folder -->
 <div id="folder" class="overlay hidden">

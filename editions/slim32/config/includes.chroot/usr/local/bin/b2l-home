@@ -1,11 +1,14 @@
 #!/bin/sh
-# Show the home screen (Super key / Home button).
-if wmctrl -l | grep -q "B2L Home"; then
-    wmctrl -k on            # minimise the other windows
-    wmctrl -a "B2L Home"
-else
-    pgrep -f b2l-launcherd >/dev/null || (b2l-launcherd &)
-    sleep 1
-    firefox-esr "http://127.0.0.1:8090/start" &
-    b2l-home-window &
-fi
+# Start button / Super key: back to the home screen.
+# Minimise ordinary windows, bring the home screen forward and tell it to leave
+# any open app (the app keeps running in the card view).
+wmctrl -k on 2>/dev/null
+wmctrl -x -a B2LHome 2>/dev/null
+python3 - <<'P' 2>/dev/null
+import json, os, urllib.request
+t = open(os.path.expanduser("~/.config/firefoxos/.launcher-token")).read().strip()
+r = urllib.request.Request("http://127.0.0.1:8090/api/home", data=json.dumps({"token": t}).encode(),
+                           headers={"Content-Type": "application/json"})
+urllib.request.urlopen(r, timeout=2)
+P
+exit 0
