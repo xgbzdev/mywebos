@@ -3,7 +3,7 @@
   "description": "Your personal space for photos, videos, apps and Find My Device",
   "version": "1.0.0",
   "launch_path": "/index.html",
-  "type": "web",
+  "type": "privileged",
   "developer": {
     "name": "B2L – Back To Life"
   },
@@ -15,6 +15,9 @@
   "orientation": "portrait-primary",
   "default_locale": "en",
   "permissions": {
+    "systemXHR": {
+      "description": "Talk to the B2L helper"
+    },
     "geolocation": {
       "description": "Find My Device (only when you turn it on)"
     }

@@ -19,9 +19,14 @@ var Net = (function () {
     return useHelper() ? FC_CONFIG.helper + "/fetch?url=" + encodeURIComponent(target) : target;
   }
 
-  /* The B2L helper adds the CORS headers, so a normal request works on every
-     Firefox OS version without the "systemXHR" privilege. */
-  function newXhr() { return new XMLHttpRequest(); }
+  /* Phones: privileged "systemXHR" request (same as the other B2L apps), so the
+     app may talk to the helper on 127.0.0.1 on every Firefox OS version. */
+  function newXhr() {
+    if (FC_CONFIG.variant === "mobile") {
+      try { return new XMLHttpRequest({ mozSystem: true }); } catch (e) {}
+    }
+    return new XMLHttpRequest();
+  }
 
   /* opts: {query, headers, json, body, contentType, responseType, auth:false} */
   function request(method, path, opts, cb) {
