@@ -23,10 +23,10 @@ ntfs-3g
 
 # --- Hardware (VIA, Intel, ATI graphics; common Wi-Fi) ---
 firmware-linux-free
-firmware-misc-nonfree
 firmware-realtek
 firmware-atheros
 firmware-brcm80211
+firmware-b43-installer
 firmware-iwlwifi
 firmware-libertas
 xserver-xorg-core

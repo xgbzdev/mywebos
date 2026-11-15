@@ -110,4 +110,7 @@ done
 # ---- Identify the edition
 sed -i 's/^PRETTY_NAME=.*/PRETTY_NAME="Firefox OS 2.0 Slim (32-bit)"/' /usr/lib/os-release || true
 echo "slim32" > /etc/b2l-edition
+# ---- Small startup image: rebuild it and report its size in the build log
+update-initramfs -u -k all || true
+ls -la /boot/initrd.img-* || true
 exit 0
