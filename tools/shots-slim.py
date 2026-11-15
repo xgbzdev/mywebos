@@ -61,3 +61,9 @@ key("ctrl-alt-t", 30)
 shot("terminal-open", 1)
 type_text("clear; free -m; ps -eo rss,comm --sort=-rss | head -n 9"); key("ret", 4)
 shot("memory-two-apps", 1)
+
+# 5. crash test: kill the home screen hard, it must come back on its own
+type_text("pkill -9 -f -- '--class B2LHome'"); key("ret", 2)
+shot("home-killed", 1)
+key("meta_l", 40)
+shot("home-after-crash", 2)
