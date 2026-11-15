@@ -57,6 +57,27 @@ L = {
 }
 S = L.get(os.environ.get("LANG", "en")[:2], L["en"])
 
+# Friendly, Firefox OS-style names for common apps
+NAMES = {
+    "en": {"firefox-esr.desktop": "Firefox", "thunar.desktop": "Files", "xfce4-terminal.desktop": "Terminal",
+           "xfce-settings-manager.desktop": "Settings", "org.xfce.mousepad.desktop": "Text Editor",
+           "galculator.desktop": "Calculator", "org.xfce.ristretto.desktop": "Gallery",
+           "org.xfce.Parole.desktop": "Video", "org.gnome.FileRoller.desktop": "Archives",
+           "org.xfce.screenshooter.desktop": "Screenshot", "fxos-install.desktop": "Install"},
+    "it": {"firefox-esr.desktop": "Firefox", "thunar.desktop": "File", "xfce4-terminal.desktop": "Terminale",
+           "xfce-settings-manager.desktop": "Impostazioni", "org.xfce.mousepad.desktop": "Editor di testo",
+           "galculator.desktop": "Calcolatrice", "org.xfce.ristretto.desktop": "Galleria",
+           "org.xfce.Parole.desktop": "Video", "org.gnome.FileRoller.desktop": "Archivi",
+           "org.xfce.screenshooter.desktop": "Screenshot", "fxos-install.desktop": "Installa"},
+}
+NM = dict(NAMES["en"])
+NM.update(NAMES.get(os.environ.get("LANG", "en")[:2], {}))
+
+
+def display_name(info):
+    return NM.get(info.get_id(), info.get_display_name())
+
+
 CSS = b"""
 #home { background-color: #2f7d1f; }
 .search { background: rgba(255,255,255,0.92); border-radius: 22px; border: none;
@@ -133,7 +154,7 @@ def all_apps():
             continue
         apps.append(info)
     # live session: the installer first; then alphabetical
-    apps.sort(key=lambda i: (i.get_id() != "fxos-install.desktop", i.get_display_name().lower()))
+    apps.sort(key=lambda i: (i.get_id() != "fxos-install.desktop", display_name(i).lower()))
     return apps
 
 
@@ -235,7 +256,7 @@ class Home(Gtk.Application):
         b.get_style_context().add_class("app")
         box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=4)
         box.pack_start(icon_image(info, size), False, False, 0)
-        name = info.get_display_name()
+        name = display_name(info)
         lbl = Gtk.Label(label=name, max_width_chars=12, ellipsize=3, justify=Gtk.Justification.CENTER)
         box.pack_start(lbl, False, False, 0)
         b.add(box)
@@ -270,7 +291,7 @@ class Home(Gtk.Application):
         if not q:
             return True
         info = child.get_child().app_info
-        text = " ".join(filter(None, [info.get_display_name(), info.get_name(),
+        text = " ".join(filter(None, [display_name(info), info.get_display_name(), info.get_name(),
                                       info.get_description() or "",
                                       " ".join(info.get_keywords() or [])])).lower()
         return q in text
