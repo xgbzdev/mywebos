@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>FireCloud</title>
+<style>
+  * { box-sizing: border-box; }
+  body { margin: 0; font-family: "Fira Sans", "Open Sans", "Noto Sans", sans-serif; background: #f4f4f4; color: #333;
+         min-height: 100vh; display: flex; flex-direction: column; }
+  header { background: #00aacc; color: #fff; padding: 14px 18px; font-size: 20px; font-weight: 300; }
+  main { flex: 1; text-align: center; padding: 40px 20px; max-width: 520px; margin: 0 auto; }
+  img { width: 112px; height: 112px; }
+  h1 { font-weight: 300; font-size: 28px; color: #00aacc; margin: 18px 0 10px; }
+  h1.err { color: #e51e1e; }
+  p { font-size: 17px; line-height: 1.45; color: #555; }
+  .steps { background: #2d2d2d; color: #f2f2f2; text-align: left; padding: 18px 22px; border-radius: 3px; margin-top: 26px; font-size: 16px; }
+  select { margin-top: 30px; font-size: 15px; padding: 6px; }
+  footer { text-align: center; color: #999; font-size: 13px; padding: 16px; }
+</style>
+</head>
+<body>
+<header>FireCloud</header>
+<main>
+  <img src="icon.png" alt="">
+  <h1 id="title"></h1>
+  <p id="text"></p>
+  <div class="steps" id="steps"></div>
+  <select id="lang" aria-label="Language"></select>
+</main>
+<footer>FireCloud · B2L – Back To Life</footer>
+<script>
+var T = {
+  en: ["English", "Your account is confirmed!", "You can now sign in to FireCloud.", "Go back to FireCloud on your B2L computer or Firefox OS phone and tap “Sign in” with your email and password.",
+       "This link didn't work", "The link has expired or was already used. Open FireCloud and sign in; if that fails, create the account again to get a new email."],
+  it: ["Italiano", "Il tuo account è confermato!", "Ora puoi accedere a FireCloud.", "Torna su FireCloud sul tuo computer B2L o telefono Firefox OS e tocca “Accedi” con email e password.",
+       "Questo link non ha funzionato", "Il link è scaduto o è già stato usato. Apri FireCloud e accedi; se non funziona, crea di nuovo l'account per ricevere una nuova email."],
+  el: ["Ελληνικά", "Ο λογαριασμός σας επιβεβαιώθηκε!", "Μπορείτε τώρα να συνδεθείτε στο FireCloud.", "Επιστρέψτε στο FireCloud στον υπολογιστή B2L ή στο τηλέφωνο Firefox OS και πατήστε «Σύνδεση» με το email και τον κωδικό σας.",
+       "Αυτός ο σύνδεσμος δεν λειτούργησε", "Ο σύνδεσμος έληξε ή έχει ήδη χρησιμοποιηθεί. Ανοίξτε το FireCloud και συνδεθείτε· αν αποτύχει, δημιουργήστε ξανά τον λογαριασμό για νέο email."],
+  es: ["Español", "¡Tu cuenta está confirmada!", "Ya puedes iniciar sesión en FireCloud.", "Vuelve a FireCloud en tu ordenador B2L o teléfono Firefox OS y pulsa “Iniciar sesión” con tu correo y contraseña.",
+       "Este enlace no ha funcionado", "El enlace ha caducado o ya se usó. Abre FireCloud e inicia sesión; si falla, crea la cuenta de nuevo para recibir otro correo."],
+  fr: ["Français", "Votre compte est confirmé !", "Vous pouvez maintenant vous connecter à FireCloud.", "Revenez sur FireCloud sur votre ordinateur B2L ou téléphone Firefox OS et appuyez sur « Se connecter » avec votre e-mail et mot de passe.",
+       "Ce lien n'a pas fonctionné", "Le lien a expiré ou a déjà été utilisé. Ouvrez FireCloud et connectez-vous ; en cas d'échec, recréez le compte pour recevoir un nouvel e-mail."],
+  de: ["Deutsch", "Dein Konto ist bestätigt!", "Du kannst dich jetzt bei FireCloud anmelden.", "Geh zurück zu FireCloud auf deinem B2L-Computer oder Firefox-OS-Telefon und tippe mit E-Mail und Passwort auf „Anmelden“.",
+       "Dieser Link hat nicht funktioniert", "Der Link ist abgelaufen oder wurde schon benutzt. Öffne FireCloud und melde dich an; falls das scheitert, erstelle das Konto neu, um eine neue E-Mail zu erhalten."],
+  pt: ["Português", "A sua conta está confirmada!", "Já pode iniciar sessão no FireCloud.", "Volte ao FireCloud no seu computador B2L ou telemóvel Firefox OS e toque em “Iniciar sessão” com o seu email e palavra-passe.",
+       "Esta ligação não funcionou", "A ligação expirou ou já foi usada. Abra o FireCloud e inicie sessão; se falhar, crie a conta de novo para receber outro email."],
+  pl: ["Polski", "Twoje konto jest potwierdzone!", "Możesz teraz zalogować się do FireCloud.", "Wróć do FireCloud na komputerze B2L lub telefonie Firefox OS i dotknij „Zaloguj się”, podając e-mail i hasło.",
+       "Ten link nie zadziałał", "Link wygasł lub został już użyty. Otwórz FireCloud i zaloguj się; jeśli się nie uda, utwórz konto ponownie, aby dostać nowy e-mail."]
+};
+// Supabase adds #error=... when the link is expired or invalid; tokens in the address are removed for safety.
+var failed = /error/.test(location.hash + location.search);
+if (location.hash || location.search) { history.replaceState(null, "", location.pathname); }
+var sel = document.getElementById("lang");
+function show(l) {
+  var t = T[l] || T.en;
+  document.documentElement.lang = l;
+  var h = document.getElementById("title");
+  h.textContent = failed ? t[4] : t[1]; h.className = failed ? "err" : "";
+  document.getElementById("text").textContent = failed ? t[5] : t[2];
+  document.getElementById("steps").textContent = t[3];
+}
+for (var k in T) { var o = document.createElement("option"); o.value = k; o.textContent = T[k][0]; sel.appendChild(o); }
+sel.value = "en";                      // English by default
+sel.onchange = function () { show(sel.value); };
+show("en");
+</script>
+</body>
+</html>
