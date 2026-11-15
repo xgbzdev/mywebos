@@ -74,6 +74,14 @@ pref("app.normandy.enabled", false);
 pref("browser.discovery.enabled", false);
 pref("browser.tabs.warnOnClose", false);
 pref("dom.allow_scripts_to_close_windows", true);
+// no recommendation / system add-on extras in the extension process
+pref("extensions.htmlaboutaddons.recommendations.enabled", false);
+pref("extensions.getAddons.showPane", false);
+pref("browser.translations.enable", false);
+pref("browser.ml.enable", false);
+pref("browser.ml.chat.enabled", false);
+pref("extensions.formautofill.addresses.enabled", false);
+pref("extensions.formautofill.creditCards.enabled", false);
 
 J
 
