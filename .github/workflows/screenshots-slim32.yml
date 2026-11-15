@@ -51,13 +51,14 @@ jobs:
           echo "accel: $ACCEL" > shots/qemu-accel.txt
           qemu-system-i386 $ACCEL -m 512 -smp 1 -cdrom b2l-slim32-i386.iso -boot d \
             -vga std -display none -usb -device usb-tablet \
-            -serial file:shots/serial-memlog.txt -monitor unix:/tmp/qemu-mon,server,nowait -daemonize
+            -serial file:$GITHUB_WORKSPACE/shots/serial-memlog.txt -monitor unix:/tmp/qemu-mon,server,nowait -daemonize
           sleep 2
-          python3 tools/shots-slim.py shots
+          python3 tools/shots-slim.py shots || echo "screenshot script failed" >> shots/qemu-accel.txt
       - name: Publish screenshots
+        if: always()
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           gh release delete screenshots-slim32 -y --cleanup-tag -R "$GITHUB_REPOSITORY" || true
-          gh release create screenshots-slim32 shots/*.png shots/*.txt -R "$GITHUB_REPOSITORY" --prerelease \
+          ls shots; gh release create screenshots-slim32 shots/*  -R "$GITHUB_REPOSITORY" --prerelease \
             --title "Screenshots: Slim 32-bit in 512 MB" --notes "Taken automatically in QEMU with 512 MB RAM"
