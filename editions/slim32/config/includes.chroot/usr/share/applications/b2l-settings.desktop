@@ -1,0 +1,13 @@
+[Desktop Entry]
+Type=Application
+Name=Settings
+Name[it]=Impostazioni
+Name[es]=Ajustes
+Name[fr]=Paramètres
+Name[de]=Einstellungen
+Name[pt]=Definições
+Name[pl]=Ustawienia
+Name[el]=Ρυθμίσεις
+Exec=b2l-settings
+Icon=preferences-system
+Categories=Settings;

@@ -1,0 +1,69 @@
+name: Build B2L Slim 32-bit ISO
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'editions/slim32/**'
+      - 'config/**'
+      - 'build.sh'
+      - '.github/workflows/build-slim32.yml'
+jobs:
+  iso:
+    runs-on: ubuntu-latest
+    container:
+      image: debian:trixie
+      options: --privileged
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build
+        run: |
+          apt-get update && apt-get install -y sudo
+          chmod +x build.sh && EDITION=slim32 ./build.sh
+      - name: Save build log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-log-slim32
+          path: build.log
+          if-no-files-found: ignore
+      - uses: actions/upload-artifact@v4
+        with:
+          name: b2l-slim32-iso
+          path: |
+            b2l-slim32-i386.iso
+            b2l-slim32-i386.iso.sha256
+          compression-level: 0
+  publish:
+    needs: iso
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: b2l-slim32-iso
+      - name: Publish public download
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          TAG="slim32-build-${{ github.run_number }}"
+          gh release create "$TAG" b2l-slim32-i386.iso b2l-slim32-i386.iso.sha256 \
+            -R "$GITHUB_REPOSITORY" --title "Firefox OS Slim 32-bit ($TAG)" --latest=false \
+            --notes "For old 32-bit PCs with 512 MB RAM (HP Mini 2133, etc.)"
+  log:
+    needs: iso
+    if: failure()
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: build-log-slim32
+      - name: Publish build log
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          tail -n 400 build.log > build-tail.log || true
+          gh release create "slim32-log-${{ github.run_number }}" build.log build-tail.log \
+            -R "$GITHUB_REPOSITORY" --prerelease --title "Slim32 build log ${{ github.run_number }}" --notes "Failed build log"

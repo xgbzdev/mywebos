@@ -164,7 +164,8 @@ class Market(Gtk.Window):
         self.linux_page = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=8, margin=12)
         self.inst_page = self.scroller()
         self.nb.append_page(self.web_page[0], Gtk.Label(label=S["web"]))
-        self.nb.append_page(self.linux_page, Gtk.Label(label=S["linux"]))
+        if shutil.which("flatpak"):            # not in the 512 MB slim edition
+            self.nb.append_page(self.linux_page, Gtk.Label(label=S["linux"]))
         self.nb.append_page(self.inst_page[0], Gtk.Label(label=S["installed"]))
         self.nb.connect("switch-page", lambda *_: GLib.idle_add(self.refresh))
         self.build_linux()

@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="__B2L_LANG__">
+<head>
+<meta charset="utf-8">
+<title>B2L Home</title>
+<link rel="stylesheet" href="/static/home.css">
+</head>
+<body>
+<header>
+  <input id="search" type="search" autocomplete="off" spellcheck="false">
+</header>
+
+<main id="grid" class="grid"></main>
+<footer id="dock" class="dock"></footer>
+
+<!-- open folder -->
+<div id="folder" class="overlay hidden">
+  <div class="folder-box">
+    <input id="folder-name" class="folder-name" maxlength="40">
+    <div id="folder-grid" class="grid small"></div>
+  </div>
+</div>
+
+<!-- Firefox OS 1.x style action menu -->
+<div id="menu" class="overlay hidden">
+  <div class="sheet">
+    <p id="menu-title"></p>
+    <div id="menu-buttons"></div>
+  </div>
+</div>
+
+<div id="toast" class="toast hidden"></div>
+<script>var B2L_TOKEN = "__B2L_TOKEN__";</script>
+<script src="/static/home.js"></script>
+</body>
+</html>

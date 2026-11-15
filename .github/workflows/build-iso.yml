@@ -8,6 +8,11 @@ on:
       - 'tools/**'
       - '.github/workflows/screenshots.yml'
       - '.github/workflows/firecloud-e2e.yml'
+      - 'editions/**'
+      - '.github/workflows/build-slim32.yml'
+      - '.github/workflows/screenshots-slim32.yml'
+      - 'docs/**'
+      - 'apps/**'
 jobs:
   iso:
     runs-on: ubuntu-latest

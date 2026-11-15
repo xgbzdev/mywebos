@@ -1,0 +1,74 @@
+#!/usr/bin/env python3
+"""B2L Slim settings hub: one dark Firefox OS-style screen with big buttons."""
+import os
+import subprocess
+import gi
+
+gi.require_version("Gtk", "3.0")
+from gi.repository import Gtk, Gdk  # noqa: E402
+
+L = {"en": ["Settings", "Wi-Fi and network", "Display", "Sound", "Language and keyboard", "About this computer",
+            "Memory: %d MB used of %d MB", "Close"],
+     "it": ["Impostazioni", "Wi-Fi e rete", "Schermo", "Audio", "Lingua e tastiera", "Informazioni sul computer",
+            "Memoria: %d MB usati su %d MB", "Chiudi"]}
+S = L.get(os.environ.get("LANG", "en")[:2], L["en"])
+CSS = b"""
+window { background-color: #2d2d2d; }
+.title { color: #fff; font-size: 18pt; padding: 16px 20px 8px; }
+.info { color: #bbb; padding: 0 20px 12px; }
+button { min-height: 44px; font-size: 12pt; margin: 6px 16px; }
+"""
+
+
+def mem():
+    d = {}
+    for line in open("/proc/meminfo"):
+        k, v = line.split(":")
+        d[k] = int(v.split()[0]) // 1024
+    return d["MemTotal"] - d.get("MemAvailable", d["MemFree"]), d["MemTotal"]
+
+
+def run(*cmd):
+    subprocess.Popen(cmd, start_new_session=True)
+
+
+def about(_b):
+    info = dict(l.strip().split("=", 1) for l in open("/etc/os-release") if "=" in l)
+    cpu = next((l.split(":", 1)[1].strip() for l in open("/proc/cpuinfo") if l.startswith("model name")), "")
+    used, total = mem()
+    d = Gtk.MessageDialog(transient_for=win, buttons=Gtk.ButtonsType.CLOSE,
+                          text=info.get("PRETTY_NAME", "").strip('"'))
+    d.format_secondary_text("%s\n%s\n%s" % (cpu, S[6] % (used, total), os.uname().release))
+    d.run()
+    d.destroy()
+
+
+p = Gtk.CssProvider()
+p.load_from_data(CSS)
+Gtk.StyleContext.add_provider_for_screen(Gdk.Screen.get_default(), p, Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
+win = Gtk.Window(title=S[0])
+win.set_default_size(420, 460)
+box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
+t = Gtk.Label(label=S[0], xalign=0)
+t.get_style_context().add_class("title")
+box.pack_start(t, False, False, 0)
+used, total = mem()
+i = Gtk.Label(label=S[6] % (used, total), xalign=0)
+i.get_style_context().add_class("info")
+box.pack_start(i, False, False, 0)
+for label, cmd in ((S[1], ("nm-connection-editor",)), (S[2], ("lxrandr",)), (S[3], ("pavucontrol",)),
+                   (S[4], ("fxos-welcome",))):
+    b = Gtk.Button(label=label)
+    b.connect("clicked", lambda _b, c=cmd: run(*c))
+    box.pack_start(b, False, False, 0)
+b = Gtk.Button(label=S[5])
+b.connect("clicked", about)
+box.pack_start(b, False, False, 0)
+c = Gtk.Button(label=S[7])
+c.get_style_context().add_class("suggested-action")
+c.connect("clicked", lambda *_: Gtk.main_quit())
+box.pack_end(c, False, False, 12)
+win.add(box)
+win.connect("destroy", Gtk.main_quit)
+win.show_all()
+Gtk.main()

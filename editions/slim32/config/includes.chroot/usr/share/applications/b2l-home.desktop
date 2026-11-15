@@ -1,0 +1,6 @@
+[Desktop Entry]
+Type=Application
+Name=Home
+Exec=b2l-home
+Icon=/usr/share/firefoxos/icons/firefoxos.png
+NoDisplay=true

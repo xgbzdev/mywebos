@@ -1,0 +1,42 @@
+name: Screenshots Slim 32-bit (512 MB)
+on:
+  workflow_dispatch:
+  workflow_run:
+    workflows: ["Build B2L Slim 32-bit ISO"]
+    types: [completed]
+permissions:
+  contents: write
+jobs:
+  shots:
+    runs-on: ubuntu-latest
+    if: ${{ github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success' }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install QEMU
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq qemu-system-x86 imagemagick
+          sudo chmod 666 /dev/kvm || true
+      - name: Get the newest slim ISO
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          sleep 60
+          TAG=$(gh release list -R "$GITHUB_REPOSITORY" -L 50 --json tagName -q '[.[]|select(.tagName|startswith("slim32-build-"))][0].tagName')
+          echo "Using $TAG"
+          gh release download "$TAG" -R "$GITHUB_REPOSITORY" --pattern 'b2l-slim32-i386.iso'
+      - name: Boot with 512 MB and take screenshots
+        run: |
+          ACCEL="-enable-kvm -cpu host"; [ -w /dev/kvm ] || ACCEL=""
+          qemu-system-i386 $ACCEL -m 512 -smp 1 -cdrom b2l-slim32-i386.iso -boot d \
+            -vga std -display none -usb -device usb-tablet \
+            -monitor unix:/tmp/qemu-mon,server,nowait -daemonize
+          sleep 2
+          python3 tools/shots-slim.py shots
+      - name: Publish screenshots
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release delete screenshots-slim32 -y --cleanup-tag -R "$GITHUB_REPOSITORY" || true
+          gh release create screenshots-slim32 shots/*.png -R "$GITHUB_REPOSITORY" --prerelease \
+            --title "Screenshots: Slim 32-bit in 512 MB" --notes "Taken automatically in QEMU with 512 MB RAM"

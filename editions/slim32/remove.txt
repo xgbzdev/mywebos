@@ -1,0 +1,7 @@
+# main-edition files the slim edition does not use
+config/includes.chroot/etc/xdg/autostart/fxos-session.desktop
+config/includes.chroot/etc/xdg/autostart/fxos-home.desktop
+config/includes.chroot/etc/xdg/xfce4
+config/includes.chroot/usr/local/bin/fxos-home
+config/includes.chroot/usr/share/applications/fxos-home.desktop
+config/package-lists/installer.list.binary

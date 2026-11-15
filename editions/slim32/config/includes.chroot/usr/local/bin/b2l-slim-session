@@ -1,0 +1,32 @@
+#!/bin/sh
+# B2L Slim session (started by Openbox): light services + the HTML home screen.
+mkdir -p "$HOME/.cache" "$HOME/.config/firefoxos"
+exec >>"$HOME/.cache/b2l-session.log" 2>&1
+
+KB="$HOME/.config/firefoxos/keyboard"
+[ -f "$KB" ] && setxkbmap "$(cat "$KB")"
+xsetroot -solid "#3a3d40"
+if grep -q "boot=live" /proc/cmdline; then xset s off -dpms; fi
+
+# Bundled Firefox OS apps (FireCloud, Checklist), once per user
+for pkg in /usr/share/firefoxos/preinstalled-apps/*.zip; do
+    mark="$HOME/.config/firefoxos/preinstalled-$(basename "$pkg" .zip)"
+    [ -f "$mark" ] || { fxos-appinstall --quiet "$pkg" && touch "$mark"; }
+done
+
+b2l-launcherd &
+tint2 &
+dunst &
+lxpolkit &
+nm-applet &
+volumeicon &
+
+# wait for the launcher service, then open the home screen
+for i in 1 2 3 4 5 6 7 8 9 10; do
+    python3 -c 'import urllib.request;urllib.request.urlopen("http://127.0.0.1:8090/health",timeout=1)' 2>/dev/null && break
+    sleep 0.5
+done
+firefox-esr "http://127.0.0.1:8090/start" &
+
+sleep 6
+fxos-welcome --autostart &

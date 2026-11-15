@@ -1,0 +1,113 @@
+#!/bin/sh
+# B2L Slim (32-bit, 512 MB): Openbox session, HTML home screen, slim Firefox.
+set -e
+
+# ---- Openbox: start the B2L session, Super key = Home, home screen behind everything
+echo 'b2l-slim-session &' >> /etc/xdg/openbox/autostart
+python3 - <<'P'
+import re
+p = "/etc/xdg/openbox/rc.xml"
+s = open(p).read()
+keys = """
+    <keybind key="Super_L"><action name="Execute"><command>b2l-home</command></action></keybind>
+    <keybind key="W-d"><action name="Execute"><command>b2l-home</command></action></keybind>
+    <keybind key="C-A-t"><action name="Execute"><command>lxterminal</command></action></keybind>
+    <keybind key="W-e"><action name="Execute"><command>pcmanfm</command></action></keybind>
+"""
+s = s.replace("</keyboard>", keys + "  </keyboard>", 1)
+apps = """
+    <application title="B2L Home*">
+      <decor>no</decor><maximized>yes</maximized><layer>below</layer>
+      <skip_taskbar>yes</skip_taskbar><skip_pager>yes</skip_pager><focus>yes</focus>
+    </application>
+"""
+if "<applications>" in s:
+    s = s.replace("</applications>", apps + "  </applications>", 1)
+else:
+    s = s.replace("</openbox_config>", "<applications>" + apps + "</applications>\n</openbox_config>", 1)
+s = re.sub(r"<number>\d+</number>", "<number>1</number>", s, count=1)       # one desktop
+s = re.sub(r"<name>Clearlooks</name>", "<name>Onyx</name>", s, count=1)
+open(p, "w").write(s)
+P
+
+# ---- Home screen wallpaper
+ln -sf /usr/share/firefoxos/wallpapers/default.png /usr/share/b2l/launcher/wallpaper.png
+
+# ---- Slim Firefox: one content process, small caches, no extras
+cat > /usr/lib/firefox-esr/defaults/pref/b2l-slim.js <<'J'
+// B2L Slim: Firefox tuned for 512 MB of RAM
+pref("fission.autostart", false);
+pref("dom.ipc.processCount", 1);
+pref("dom.ipc.processCount.webIsolated", 1);
+pref("dom.ipc.processPrelaunch.enabled", false);
+pref("dom.ipc.keepProcessesAlive.web", 0);
+pref("browser.tabs.unloadOnLowMemory", true);
+pref("browser.sessionhistory.max_total_viewers", 0);
+pref("browser.sessionhistory.max_entries", 15);
+pref("browser.sessionstore.max_tabs_undo", 2);
+pref("browser.sessionstore.interval", 60000);
+pref("browser.sessionstore.resume_from_crash", false);
+pref("browser.cache.memory.capacity", 16384);
+pref("browser.cache.disk.capacity", 102400);
+pref("media.memory_cache_max_size", 16384);
+pref("image.mem.surfacecache.max_size_kb", 65536);
+pref("layout.frame_rate", 30);
+pref("general.smoothScroll", false);
+pref("ui.prefersReducedMotion", 1);
+pref("network.prefetch-next", false);
+pref("network.dns.disablePrefetch", true);
+pref("network.predictor.enabled", false);
+pref("browser.newtabpage.activity-stream.feeds.topsites", false);
+pref("browser.newtabpage.activity-stream.feeds.section.topstories", false);
+pref("browser.newtabpage.activity-stream.showSponsored", false);
+pref("browser.newtabpage.activity-stream.showSponsoredTopSites", false);
+pref("browser.newtabpage.activity-stream.feeds.snippets", false);
+pref("extensions.pocket.enabled", false);
+pref("browser.aboutwelcome.enabled", false);
+pref("browser.startup.homepage_override.mstone", "ignore");
+pref("startup.homepage_welcome_url", "");
+pref("browser.shell.checkDefaultBrowser", false);
+pref("datareporting.policy.dataSubmissionEnabled", false);
+pref("toolkit.telemetry.enabled", false);
+pref("app.normandy.enabled", false);
+pref("browser.discovery.enabled", false);
+pref("browser.tabs.warnOnClose", false);
+pref("dom.allow_scripts_to_close_windows", true);
+J
+
+# Firefox policies: allow the home screen to open its window; privacy defaults
+python3 - <<'P'
+import json, os
+p = "/etc/firefox/policies/policies.json"
+d = json.load(open(p)) if os.path.exists(p) else {"policies": {}}
+pol = d.setdefault("policies", {})
+pol["PopupBlocking"] = {"Allow": ["http://127.0.0.1:8090"], "Default": True}
+pol["DisableTelemetry"] = True
+pol["DisablePocket"] = True
+pol["DisableFirefoxStudies"] = True
+pol["Homepage"] = {"URL": "https://duckduckgo.com/", "StartPage": "homepage"}
+os.makedirs(os.path.dirname(p), exist_ok=True)
+json.dump(d, open(p, "w"), indent=2)
+P
+
+# ---- More compressed RAM for 512 MB machines
+if [ -f /etc/default/zramswap ]; then
+    sed -i 's/^#\?PERCENT=.*/PERCENT=75/' /etc/default/zramswap
+fi
+
+# ---- Installer: allow 512 MB machines
+W=/etc/calamares/modules/welcome.conf
+if [ -f "$W" ]; then
+    sed -i -E 's/^(\s*requiredRam:).*/\1 0.4/; s/^(\s*requiredStorage:).*/\1 6.0/' "$W"
+fi
+
+# ---- Hide duplicate/technical launchers
+for f in /usr/share/applications/lxterminal.desktop; do :; done
+for f in openbox obconf tint2 tint2conf; do
+    [ -f /usr/share/applications/$f.desktop ] && echo "NoDisplay=true" >> /usr/share/applications/$f.desktop || true
+done
+
+# ---- Identify the edition
+sed -i 's/^PRETTY_NAME=.*/PRETTY_NAME="Firefox OS 2.0 Slim (32-bit)"/' /usr/lib/os-release || true
+echo "slim32" > /etc/b2l-edition
+exit 0

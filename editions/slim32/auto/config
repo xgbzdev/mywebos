@@ -1,0 +1,22 @@
+#!/bin/sh
+set -e
+# B2L Slim: 32-bit (i386) for old PCs with 512 MB RAM – Debian 12 "bookworm"
+# (the last Debian release that supports 32-bit PCs; security updates into 2028).
+lb config noauto \
+    --distribution bookworm \
+    --architectures i386 \
+    --linux-flavours 686 \
+    --archive-areas "main contrib non-free non-free-firmware" \
+    --binary-images iso-hybrid \
+    --bootloaders syslinux \
+    --debian-installer none \
+    --iso-application "Firefox OS Slim" \
+    --iso-publisher "B2L - Back To Life" \
+    --iso-volume "B2L_SLIM32" \
+    --image-name live-image \
+    --memtest none \
+    --bootappend-live "boot=live components quiet splash loglevel=3 hostname=firefoxos username=user user-fullname=Live locales=en_US.UTF-8 keyboard-layouts=us" \
+    --apt-recommends false \
+    --security true \
+    --updates true \
+    "${@}"

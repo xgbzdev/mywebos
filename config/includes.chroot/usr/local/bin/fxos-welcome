@@ -293,7 +293,7 @@ class Welcome(Gtk.Window):
             cancel = {"it": "Annulla", "el": "Ακύρωση", "es": "Cancelar", "fr": "Annuler",
                       "de": "Abbrechen", "pt": "Cancelar", "pl": "Anuluj"}.get(self.lang, "Cancel")
             if fxosui.confirm(self, self.t(20), "OK", cancel):
-                run("xfce4-session-logout", "--logout", "--fast")
+                run("sh", "-c", "xfce4-session-logout --logout --fast 2>/dev/null || openbox --exit")
         Gtk.main_quit()
 
 

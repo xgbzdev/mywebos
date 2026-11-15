@@ -13,6 +13,24 @@ if [ "$(id -u)" -ne 0 ]; then
 fi
 
 cd "$(dirname "$(readlink -f "$0")")"
+ROOT="$(pwd)"
+OUTNAME="firefoxos-amd64.iso"
+
+# Editions (e.g. EDITION=slim32): main config + the edition's own files on top
+EDITION="${EDITION:-}"
+if [ -n "$EDITION" ]; then
+    [ -d "editions/$EDITION" ] || { echo "No such edition: $EDITION" >&2; exit 1; }
+    W="build-$EDITION"
+    rm -rf "$W"; mkdir -p "$W"
+    cp -r auto config "$W"/
+    [ -d branding ] && cp -r branding "$W"/
+    cp -r "editions/$EDITION/." "$W"/
+    if [ -f "$W/remove.txt" ]; then
+        (cd "$W" && grep -v '^#' remove.txt | xargs -r rm -rf)
+    fi
+    [ -f "$W/outname" ] && OUTNAME="$(cat "$W/outname")"
+    cd "$W"
+fi
 
 echo "==> Installing build tools (live-build, xorriso, squashfs)..."
 apt-get update
@@ -20,7 +38,7 @@ apt-get install -y live-build debootstrap xorriso squashfs-tools \
     debian-archive-keyring ca-certificates
 
 # Ubuntu's live-build is old; it still works for a Debian target but needs the keyring.
-chmod +x auto/* config/hooks/normal/*.hook.chroot config/includes.chroot/usr/local/bin/*
+chmod +x auto/* config/hooks/normal/*.hook.* config/includes.chroot/usr/local/bin/*
 
 echo "==> Cleaning previous build..."
 lb clean --purge || true
@@ -41,15 +59,15 @@ fi
 echo "==> Building (this takes 20-60 minutes)..."
 lb build
 
-ISO=$(ls -1 live-image-amd64.hybrid.iso 2>/dev/null || true)
+ISO=$(ls -1 live-image-*.hybrid.iso 2>/dev/null | head -n1 || true)
 if [ -n "$ISO" ]; then
-    mv "$ISO" firefoxos-amd64.iso
-    sha256sum firefoxos-amd64.iso > firefoxos-amd64.iso.sha256
+    mv "$ISO" "$ROOT/$OUTNAME"
+    cd "$ROOT"
+    sha256sum "$OUTNAME" > "$OUTNAME.sha256"
     echo
-    echo "Done: $(pwd)/firefoxos-amd64.iso"
-    echo "Test it:  qemu-system-x86_64 -enable-kvm -m 4096 -cdrom firefoxos-amd64.iso"
-    echo "Or write it to a USB stick with Ventoy, balenaEtcher or:"
-    echo "  sudo dd if=firefoxos-amd64.iso of=/dev/sdX bs=4M status=progress oflag=sync"
+    echo "Done: $ROOT/$OUTNAME"
+    echo "Write it to a USB stick with Ventoy, balenaEtcher or:"
+    echo "  sudo dd if=$OUTNAME of=/dev/sdX bs=4M status=progress oflag=sync"
 else
     echo "Build failed - see build.log" >&2
     exit 1

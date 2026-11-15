@@ -1,0 +1,346 @@
+#!/usr/bin/env python3
+"""B2L launcher service (slim edition).
+
+A tiny local web server (Python standard library only, ~15 MB of RAM) behind
+the HTML home screen:
+
+  http://127.0.0.1:8090/            home screen (HTML)
+  /api/apps                         installed apps (native, web apps, Firefox OS apps)
+  /api/layout   GET/POST            folders, order and dock (~/.config/firefoxos/launcher.json)
+  /api/launch   POST                start a native app
+  /api/uninstall POST               remove a web app / Firefox OS app
+  /api/icon?id=…                    app icon
+
+  http://<app-id>.localhost:8090/   files of an installed Firefox OS app; every app
+                                    gets its own origin, so apps can't read each
+                                    other's data (Firefox resolves *.localhost itself)
+
+Only listens on 127.0.0.1. Actions need a secret token that is only written into
+the home page, and JSON bodies, so other websites can't start programs.
+"""
+import configparser
+import glob
+import json
+import mimetypes
+import os
+import re
+import secrets
+import shlex
+import subprocess
+import sys
+import urllib.parse
+from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+
+sys.path.insert(0, "/usr/lib/firefoxos")
+try:
+    import fxosapps
+except ImportError:  # running outside B2L
+    fxosapps = None
+
+PORT = 8090
+HOME = os.path.expanduser("~")
+CONF = os.path.join(HOME, ".config/firefoxos")
+LAYOUT = os.path.join(CONF, "launcher.json")
+WEB = os.environ.get("B2L_LAUNCHER_DIR", "/usr/share/b2l/launcher")
+TOKEN = secrets.token_hex(16)
+LIVE = "boot=live" in open("/proc/cmdline").read()
+LANG = os.environ.get("LANG", "en")[:2]
+
+APP_DIRS = ["/usr/share/applications", "/usr/local/share/applications",
+            os.path.join(HOME, ".local/share/applications")]
+HIDE = {"debian-xterm", "debian-uxterm", "openbox", "obconf", "tint2conf", "tint2", "lxpolkit",
+        "install-debian", "calamares", "fxos-home", "fxos-appinstall", "pcmanfm-desktop-pref",
+        "python3.11", "vim", "lxterminal-preferences", "nm-applet", "volumeicon", "fxos-welcome",
+        "lightdm-gtk-greeter-settings", "display-im6.q16", "org.freedesktop.IBus.Setup",
+        "mpv", "io.mpv.Mpv", "lxrandr", "pavucontrol", "nm-connection-editor"}
+NICE = {
+    "en": {"firefox-esr": "Firefox", "pcmanfm": "Files", "lxterminal": "Terminal",
+           "org.xfce.mousepad": "Text Editor", "galculator": "Calculator", "org.xfce.ristretto": "Gallery",
+           "xarchiver": "Archives", "fxos-install": "Install", "b2l-settings": "Settings"},
+    "it": {"firefox-esr": "Firefox", "pcmanfm": "File", "lxterminal": "Terminale",
+           "org.xfce.mousepad": "Editor di testo", "galculator": "Calcolatrice", "org.xfce.ristretto": "Galleria",
+           "xarchiver": "Archivi", "fxos-install": "Installa", "b2l-settings": "Impostazioni"},
+}
+NAMES = dict(NICE["en"])
+NAMES.update(NICE.get(LANG, {}))
+DEFAULT_LAYOUT = {"dock": ["firefox-esr", "fxos-marketplace", "fxos-app-firecloud", "pcmanfm", "b2l-settings"],
+                  "items": [], "folders": {}}
+
+
+# ---------------------------------------------------------------- apps
+def _icon_path(name):
+    if not name:
+        return None
+    if name.startswith("/"):
+        return name if os.path.exists(name) else None
+    for pat in ("/usr/share/icons/Papirus/64x64/apps/%s.svg", "/usr/share/icons/Papirus/48x48/apps/%s.svg",
+                "/usr/share/icons/hicolor/scalable/apps/%s.svg", "/usr/share/icons/hicolor/256x256/apps/%s.png",
+                "/usr/share/icons/hicolor/128x128/apps/%s.png", "/usr/share/icons/hicolor/64x64/apps/%s.png",
+                "/usr/share/icons/hicolor/48x48/apps/%s.png", "/usr/share/pixmaps/%s.svg",
+                "/usr/share/pixmaps/%s.png", "/usr/share/icons/Papirus/64x64/categories/%s.svg",
+                "/usr/share/icons/Adwaita/scalable/apps/%s.svg", "/usr/share/icons/Adwaita/48x48/apps/%s.png"):
+        p = pat % name
+        if os.path.exists(p):
+            return p
+    return None
+
+
+def _desktop_files():
+    seen = {}
+    for d in APP_DIRS:                      # later dirs (user) override earlier ones
+        for f in glob.glob(os.path.join(d, "*.desktop")):
+            seen[os.path.basename(f)[:-8]] = f
+    return seen
+
+
+def _parse(path):
+    cp = configparser.RawConfigParser(strict=False, interpolation=None)
+    cp.optionxform = str
+    try:
+        cp.read(path, encoding="utf-8")
+        return dict(cp.items("Desktop Entry"))
+    except Exception:
+        return None
+
+
+def list_apps():
+    apps = {}
+    for aid, path in _desktop_files().items():
+        e = _parse(path)
+        if not e:
+            continue
+        if e.get("Type") != "Application" or e.get("NoDisplay", "").lower() == "true" \
+                or e.get("Hidden", "").lower() == "true":
+            if aid != "fxos-install":
+                continue
+        if aid in HIDE or ("install-debian" in aid) or (aid == "fxos-install" and not LIVE):
+            continue
+        if e.get("OnlyShowIn") and "Openbox" not in e.get("OnlyShowIn"):
+            continue
+        name = e.get("Name[%s]" % LANG) or e.get("Name") or aid
+        name = NAMES.get(aid, name)
+        exec_ = e.get("Exec", "")
+        kind, url = "native", None
+        m = re.match(r"^fxos-webapp\s+(\S+)\s+(\S+)", exec_)
+        if m:
+            kind, url = "web", m.group(2)
+        m = re.match(r"^fxos-apprun\s+(\S+)", exec_)
+        if m and fxosapps:
+            try:
+                meta = fxosapps.get(m.group(1))
+                kind = "fxos"
+                launch = meta.get("manifest", {}).get("launch_path") or "/index.html"
+                if meta.get("type") == "hosted":
+                    url = meta["launch_url"]
+                else:
+                    url = "http://%s.localhost:%d/%s" % (meta["id"], PORT, launch.lstrip("/"))
+                orient = meta.get("orientation") or ""
+                orient = " ".join(orient) if isinstance(orient, list) else orient
+            except Exception:
+                continue
+        else:
+            orient = ""
+        apps[aid] = {"id": aid, "name": name, "kind": kind, "url": url,
+                     "portrait": kind == "fxos" and "landscape" not in orient,
+                     "removable": kind in ("web", "fxos") or "/.local/share/" in path,
+                     "keywords": (e.get("Keywords", "") + " " + e.get("Comment", "") + " " + e.get("Name", "")).lower(),
+                     "_exec": exec_, "_icon": e.get("Icon"), "_path": path}
+    return apps
+
+
+def public(app):
+    return {k: v for k, v in app.items() if not k.startswith("_")}
+
+
+# ---------------------------------------------------------------- layout
+def load_layout():
+    try:
+        with open(LAYOUT) as f:
+            d = json.load(f)
+        if isinstance(d, dict):
+            for k, v in DEFAULT_LAYOUT.items():
+                d.setdefault(k, v if not isinstance(v, (list, dict)) else type(v)(v))
+            return d
+    except (OSError, ValueError):
+        pass
+    return json.loads(json.dumps(DEFAULT_LAYOUT))
+
+
+def save_layout(d):
+    clean = {"dock": [str(x) for x in d.get("dock", [])][:6],
+             "items": [str(x) for x in d.get("items", [])][:500],
+             "folders": {}}
+    for fid, f in (d.get("folders") or {}).items():
+        if re.match(r"^folder-[a-z0-9]{1,24}$", str(fid)) and isinstance(f, dict):
+            clean["folders"][fid] = {"name": str(f.get("name", ""))[:40],
+                                     "apps": [str(x) for x in f.get("apps", [])][:200]}
+    os.makedirs(CONF, exist_ok=True)
+    tmp = LAYOUT + ".tmp"
+    with open(tmp, "w") as fh:
+        json.dump(clean, fh, indent=1)
+    os.replace(tmp, LAYOUT)
+    return clean
+
+
+def launch(app):
+    cmd = re.sub(r"%[fFuUdDnNickvm]", "", app["_exec"]).strip()
+    try:
+        args = shlex.split(cmd)
+    except ValueError:
+        return False
+    if not args:
+        return False
+    subprocess.Popen(args, start_new_session=True, stdin=subprocess.DEVNULL,
+                     stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    return True
+
+
+# ---------------------------------------------------------------- HTTP
+class Server(ThreadingHTTPServer):
+    daemon_threads = True
+
+    def handle_error(self, request, client_address):
+        pass                                            # quiet: clients that hang up early
+
+
+class Handler(BaseHTTPRequestHandler):
+    server_version = "B2L"
+    protocol_version = "HTTP/1.1"
+
+    def log_message(self, *a):
+        pass
+
+    def send(self, code, body=b"", ctype="text/plain; charset=utf-8", extra=None):
+        if isinstance(body, str):
+            body = body.encode()
+        if code >= 400:
+            self.close_connection = True
+        self.send_response(code)
+        self.send_header("Content-Type", ctype)
+        self.send_header("Content-Length", str(len(body)))
+        self.send_header("Cache-Control", "no-store")
+        self.send_header("X-Content-Type-Options", "nosniff")
+        for k, v in (extra or {}).items():
+            self.send_header(k, v)
+        self.end_headers()
+        if self.command != "HEAD":
+            self.wfile.write(body)
+
+    def json(self, obj, code=200):
+        self.send(code, json.dumps(obj), "application/json")
+
+    def host(self):
+        return (self.headers.get("Host") or "").split(":")[0].lower()
+
+    def file(self, root, rel):
+        root = os.path.realpath(root)
+        p = os.path.realpath(os.path.join(root, rel.lstrip("/")))
+        if not (p == root or p.startswith(root + os.sep)):
+            return self.send(403, "forbidden")
+        if os.path.isdir(p):
+            p = os.path.join(p, "index.html")
+        if not os.path.isfile(p):
+            return self.send(404, "not found")
+        ctype = mimetypes.guess_type(p)[0] or "application/octet-stream"
+        if p.endswith(".webapp"):
+            ctype = "application/x-web-app-manifest+json"
+        if ctype.startswith("text/") or ctype in ("application/javascript", "application/json"):
+            ctype += "; charset=utf-8"
+        with open(p, "rb") as fh:
+            self.send(200, fh.read(), ctype)
+
+    # -- per-app origins: <id>.localhost
+    def serve_app(self, host, path):
+        app_id = host[:-len(".localhost")]
+        if not re.match(r"^[a-z0-9-]{1,64}$", app_id):
+            return self.send(404, "no such app")
+        root = os.path.join(HOME, ".local/share/firefoxos/apps", app_id, "package")
+        if not os.path.isdir(root):
+            return self.send(404, "no such app")
+        return self.file(root, urllib.parse.unquote(path))
+
+    def do_HEAD(self):
+        self.do_GET()
+
+    def do_GET(self):
+        u = urllib.parse.urlsplit(self.path)
+        host = self.host()
+        if host.endswith(".localhost") and host != "localhost":
+            return self.serve_app(host, u.path)
+        if host not in ("127.0.0.1", "localhost"):
+            return self.send(421, "wrong host")              # blocks DNS-rebinding tricks
+        if u.path in ("/", "/index.html"):
+            with open(os.path.join(WEB, "home.html"), encoding="utf-8") as fh:
+                html = fh.read().replace("__B2L_TOKEN__", TOKEN).replace("__B2L_LANG__", LANG)
+            return self.send(200, html, "text/html; charset=utf-8")
+        if u.path == "/start":
+            with open(os.path.join(WEB, "start.html"), encoding="utf-8") as fh:
+                return self.send(200, fh.read(), "text/html; charset=utf-8")
+        if u.path.startswith("/static/"):
+            return self.file(WEB, u.path[len("/static/"):])
+        if u.path == "/api/apps":
+            return self.json([public(a) for a in list_apps().values()])
+        if u.path == "/api/layout":
+            return self.json(load_layout())
+        if u.path == "/api/icon":
+            q = urllib.parse.parse_qs(u.query)
+            app = list_apps().get((q.get("id") or [""])[0])
+            p = _icon_path(app and app["_icon"]) or _icon_path("application-x-executable")
+            if not p:
+                return self.send(404)
+            ctype = "image/svg+xml" if p.endswith(".svg") else (mimetypes.guess_type(p)[0] or "image/png")
+            with open(p, "rb") as fh:
+                return self.send(200, fh.read(), ctype, {"Cache-Control": "max-age=3600"})
+        if u.path == "/health":
+            return self.send(200, "ok")
+        return self.send(404, "not found")
+
+    def do_POST(self):
+        u = urllib.parse.urlsplit(self.path)
+        try:
+            n = int(self.headers.get("Content-Length") or 0)
+        except ValueError:
+            n = 0
+        if n > 1_000_000:
+            return self.send(413, "too big")
+        raw = self.rfile.read(n) if n else b""          # always read the body first
+        if self.host() not in ("127.0.0.1", "localhost"):
+            return self.send(421, "wrong host")
+        if not (self.headers.get("Content-Type") or "").startswith("application/json"):
+            return self.send(415, "json only")
+        try:
+            data = json.loads(raw or b"{}")
+        except ValueError:
+            return self.send(400, "bad json")
+        if not isinstance(data, dict):
+            return self.send(400, "bad json")
+        if not secrets.compare_digest(str(data.get("token", "")), TOKEN):
+            return self.send(403, "bad token")
+        if u.path == "/api/layout":
+            return self.json(save_layout(data.get("layout") or {}))
+        app = list_apps().get(str(data.get("id", "")))
+        if u.path == "/api/launch":
+            if not app:
+                return self.send(404, "no such app")
+            return self.json({"ok": launch(app)})
+        if u.path == "/api/uninstall":
+            if not app or not app["removable"]:
+                return self.send(400, "not removable")
+            m = re.match(r"^fxos-apprun\s+(\S+)", app["_exec"])
+            if m and fxosapps:
+                fxosapps.uninstall(m.group(1))
+            elif app["_path"].startswith(os.path.join(HOME, ".local/share/applications")):
+                os.remove(app["_path"])
+            return self.json({"ok": True})
+        return self.send(404, "not found")
+
+
+def main():
+    mimetypes.add_type("application/javascript", ".js")
+    mimetypes.add_type("image/svg+xml", ".svg")
+    srv = Server(("127.0.0.1", PORT), Handler)
+    srv.serve_forever()
+
+
+if __name__ == "__main__":
+    main()

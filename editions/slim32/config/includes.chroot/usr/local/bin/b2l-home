@@ -1,0 +1,10 @@
+#!/bin/sh
+# Show the home screen (Super key / Home button).
+if wmctrl -l | grep -q "B2L Home"; then
+    wmctrl -k on            # minimise the other windows
+    wmctrl -a "B2L Home"
+else
+    pgrep -f b2l-launcherd >/dev/null || (b2l-launcherd &)
+    sleep 1
+    firefox-esr "http://127.0.0.1:8090/start" &
+fi
