@@ -38,8 +38,10 @@ type_text(" b2l.memlog")
 key("ret")
 shot("splash", 25)
 shot("welcome", 200)            # 512 MB + emulated disk: give it time
-key("alt-f4", 6)                # close the welcome wizard
-shot("home", 15)
+key("alt-f4", 6)                # close the welcome wizard (never closes the home screen)
+shot("home", 10)
+key("alt-f4", 4)                # pressing it on the home screen must do nothing
+shot("home-after-altf4", 2)
 
 # 1. a Firefox OS app inside the home screen
 type_text("firecloud"); shot("search", 2)

@@ -1,8 +1,10 @@
 #!/bin/sh
 # Start button / Super key: back to the home screen.
-# Minimise ordinary windows, bring the home screen forward and tell it to leave
-# any open app (the app keeps running in the card view).
-wmctrl -k on 2>/dev/null
+# Minimise the other windows (not the home screen itself), bring the home
+# screen forward and tell it to leave any open app (it stays in the card view).
+for w in $(wmctrl -lx | awk '$3 != "B2LHome.B2LHome" && $2 != "-1" {print $1}'); do
+    wmctrl -i -r "$w" -b add,hidden 2>/dev/null
+done
 wmctrl -x -a B2LHome 2>/dev/null
 python3 - <<'P' 2>/dev/null
 import json, os, urllib.request

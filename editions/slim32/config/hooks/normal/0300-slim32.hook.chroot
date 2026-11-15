@@ -14,6 +14,10 @@ keys = """
     <keybind key="C-A-t"><action name="Execute"><command>lxterminal</command></action></keybind>
     <keybind key="W-e"><action name="Execute"><command>pcmanfm</command></action></keybind>
 """
+# Alt+F4 never closes the home screen
+s = re.sub(r'<keybind key="A-F4">.*?</keybind>', "", s, flags=re.S)
+keys += """    <keybind key="A-F4"><action name="Execute"><command>b2l-close</command></action></keybind>
+"""
 s = s.replace("</keyboard>", keys + "  </keyboard>", 1)
 apps = """
     <application class="B2LHome">

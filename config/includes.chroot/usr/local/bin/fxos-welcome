@@ -304,4 +304,6 @@ if __name__ == "__main__":
         sys.exit(0)
     w = Welcome()
     w.connect("destroy", Gtk.main_quit)
+    w.set_keep_above(True)                  # first-run wizard stays on top with focus
+    w.present()
     Gtk.main()
