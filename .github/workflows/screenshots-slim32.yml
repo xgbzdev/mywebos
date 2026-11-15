@@ -1,6 +1,10 @@
 name: Screenshots Slim 32-bit (512 MB)
 on:
   workflow_dispatch:
+  push:
+    paths:
+      - '.github/workflows/screenshots-slim32.yml'
+      - 'tools/shots-slim.py'
   workflow_run:
     workflows: ["Build B2L Slim 32-bit ISO"]
     types: [completed]
@@ -26,15 +30,20 @@ jobs:
           echo "Using $TAG"
           gh release download "$TAG" -R "$GITHUB_REPOSITORY" --pattern 'b2l-slim32-i386.iso'
       - name: Startup image size
+        continue-on-error: true
         run: |
+          set +e
           mkdir -p shots
-          xorriso -indev b2l-slim32-i386.iso -ls_l /live 2>/dev/null | tee shots/iso-live-folder.txt
-          xorriso -osirrox on -indev b2l-slim32-i386.iso -extract /live/initrd.img initrd.img 2>/dev/null || true
+          xorriso -indev b2l-slim32-i386.iso -ls_l /live > shots/iso-live-folder.txt 2>&1
+          xorriso -osirrox on -indev b2l-slim32-i386.iso -extract /live/initrd.img initrd.img > /dev/null 2>&1
+          sudo apt-get install -y -qq initramfs-tools-core > /dev/null 2>&1
           if [ -f initrd.img ]; then
-            mkdir x && cd x && (xz -dc ../initrd.img 2>/dev/null || zstd -dc ../initrd.img 2>/dev/null || gzip -dc ../initrd.img) | cpio -idm 2>/dev/null
-            du -sh . | tee -a ../shots/iso-live-folder.txt
-            du -sh usr/lib/* lib/* 2>/dev/null | sort -h | tail -n 8 | tee -a ../shots/iso-live-folder.txt
+            unmkinitramfs initrd.img x > /dev/null 2>&1
+            echo "--- unpacked startup image ---" >> shots/iso-live-folder.txt
+            du -sh x >> shots/iso-live-folder.txt
+            du -sh x/*/usr/lib/* x/usr/lib/* 2>/dev/null | sort -h | tail -n 8 >> shots/iso-live-folder.txt
           fi
+          cat shots/iso-live-folder.txt
       - name: Boot with 512 MB and take screenshots
         run: |
           ACCEL="-enable-kvm -cpu host"; [ -w /dev/kvm ] || ACCEL=""
