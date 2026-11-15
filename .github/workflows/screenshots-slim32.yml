@@ -60,5 +60,9 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           gh release delete screenshots-slim32 -y --cleanup-tag -R "$GITHUB_REPOSITORY" || true
-          ls shots; gh release create screenshots-slim32 shots/*  -R "$GITHUB_REPOSITORY" --prerelease \
-            --title "Screenshots: Slim 32-bit in 512 MB" --notes "Taken automatically in QEMU with 512 MB RAM"
+          ls shots
+          for i in 1 2 3 4 5; do
+            sleep 10
+            gh release create screenshots-slim32 shots/* -R "$GITHUB_REPOSITORY" --prerelease \
+              --title "Screenshots: Slim 32-bit in 512 MB" --notes "Taken automatically in QEMU with 512 MB RAM" && break
+          done
