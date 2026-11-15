@@ -1,5 +1,8 @@
 @echo off
-rem Starts the B2L helper on the phone with FireCloud's server allowed (-allow).
+rem Starts the B2L helper for ALL B2L apps (Weather, Maps, Tumblr, AI apps, FireCloud...).
+rem The helper already allows the servers of the built-in B2L apps.
+rem EXTRA servers for newer apps go in the line below, separated by commas (no spaces):
+rem   FireCloud: wksjtjligjvclvmyjgcd.supabase.co   Find My Device map: tile.openstreetmap.org
 set "ALLOW=wksjtjligjvclvmyjgcd.supabase.co,tile.openstreetmap.org"
 set "ADB=adb"
 if exist "C:\Users\%USERNAME%\Downloads\platform-tools\adb.exe" set "ADB=C:\Users\%USERNAME%\Downloads\platform-tools\adb.exe"
@@ -25,7 +28,7 @@ if errorlevel 1 (
   echo Send a photo of this window.
 ) else (
   echo.
-  echo Helper is running with FireCloud allowed. Open FireCloud on the phone.
+  echo Helper is running for all B2L apps.
   echo After every phone restart, run this file again.
 )
 pause
