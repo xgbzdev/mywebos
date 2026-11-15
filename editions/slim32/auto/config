@@ -10,7 +10,7 @@ lb config noauto \
     --binary-images iso-hybrid \
     --bootloaders syslinux \
     --debian-installer none \
-    --iso-application "Firefox OS Slim" \
+    --iso-application "Firefox OS" \
     --iso-publisher "B2L - Back To Life" \
     --iso-volume "B2L_SLIM32" \
     --image-name live-image \
