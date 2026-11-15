@@ -18,7 +18,7 @@ def hmp(cmd):
         pass
     s.close()
 
-KEYS = {" ": "spc", ".": "dot", "-": "minus", "/": "slash", ":": "shift-semicolon", ";": "semicolon", "|": "shift-backslash", "_": "shift-minus", "*": "shift-8", '"': "shift-apostrophe", "~": "shift-grave_accent", ">": "shift-dot"}
+KEYS = {" ": "spc", ".": "dot", "-": "minus", "/": "slash", ":": "shift-semicolon", ";": "semicolon", "|": "shift-backslash", "_": "shift-minus", "*": "shift-8", '"': "shift-apostrophe", "~": "shift-grave_accent", ">": "shift-dot", "<": "shift-comma", "&": "shift-7"}
 def key(k, wait=0.3):
     hmp("sendkey " + k); time.sleep(wait)
 def type_text(t):
@@ -63,3 +63,7 @@ key("alt-f4", 4)
 home_launch("firefox", "firefox", 60)
 key("alt-f4", 4)
 key("meta_l", 3); shot("home-again", 3)
+key("ctrl-alt-t", 8)
+type_text("setsid fxos-appinstall /usr/share/firefoxos/sample-apps/checklist.zip </dev/null &"); key("ret")
+shot("install-dialog", 8)
+key("esc", 3)

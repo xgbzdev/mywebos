@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=X-GNOME-Metatheme
+Name=FirefoxOS
+Comment=Firefox OS 1.x/2.x look: gray buttons, cyan actions, dark bars
+
+[X-GNOME-Metatheme]
+GtkTheme=FirefoxOS
+IconTheme=Papirus

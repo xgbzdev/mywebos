@@ -12,6 +12,7 @@ import urllib.parse
 
 import gi
 
+sys.path.insert(0, "/usr/lib/firefoxos")
 gi.require_version("Gtk", "3.0")
 gi.require_version("Gdk", "3.0")
 from gi.repository import Gdk, GdkPixbuf, Gio, GLib, Gtk  # noqa: E402
@@ -39,21 +40,21 @@ if not LIVE:
 
 L = {
     "en": ("Search the web or apps", "Add to dock", "Remove from dock", "Uninstall",
-           "Change wallpaper…", "Search for “%s”"),
+           "Change wallpaper…", "Search for “%s”", 'Uninstall “%s”? Its data will be deleted.', 'Cancel'),
     "it": ("Cerca nel web o nelle app", "Aggiungi al dock", "Togli dal dock", "Disinstalla",
-           "Cambia sfondo…", "Cerca “%s”"),
+           "Cambia sfondo…", "Cerca “%s”", 'Disinstallare “%s”? I suoi dati verranno eliminati.', 'Annulla'),
     "es": ("Busca en la web o apps", "Añadir al dock", "Quitar del dock", "Desinstalar",
-           "Cambiar fondo…", "Buscar “%s”"),
+           "Cambiar fondo…", "Buscar “%s”", '¿Desinstalar “%s”? Se borrarán sus datos.', 'Cancelar'),
     "fr": ("Rechercher sur le web ou les applis", "Ajouter au dock", "Retirer du dock",
-           "Désinstaller", "Changer de fond d'écran…", "Rechercher « %s »"),
+           "Désinstaller", "Changer de fond d'écran…", "Rechercher « %s »", 'Désinstaller « %s » ? Ses données seront supprimées.', 'Annuler'),
     "de": ("Web oder Apps durchsuchen", "Zum Dock hinzufügen", "Aus dem Dock entfernen",
-           "Deinstallieren", "Hintergrund ändern…", "Nach „%s“ suchen"),
+           "Deinstallieren", "Hintergrund ändern…", "Nach „%s“ suchen", '„%s“ deinstallieren? Die Daten werden gelöscht.', 'Abbrechen'),
     "el": ("Αναζήτηση στο web ή σε εφαρμογές", "Προσθήκη στο dock", "Αφαίρεση από το dock",
-           "Απεγκατάσταση", "Αλλαγή ταπετσαρίας…", "Αναζήτηση «%s»"),
+           "Απεγκατάσταση", "Αλλαγή ταπετσαρίας…", "Αναζήτηση «%s»", 'Απεγκατάσταση «%s»; Τα δεδομένα θα διαγραφούν.', 'Ακύρωση'),
     "pt": ("Pesquisar na web ou apps", "Adicionar à dock", "Remover da dock", "Desinstalar",
-           "Mudar fundo…", "Pesquisar “%s”"),
+           "Mudar fundo…", "Pesquisar “%s”", 'Desinstalar “%s”? Os dados serão apagados.', 'Cancelar'),
     "pl": ("Szukaj w sieci lub aplikacjach", "Dodaj do docka", "Usuń z docka", "Odinstaluj",
-           "Zmień tapetę…", "Szukaj „%s”"),
+           "Zmień tapetę…", "Szukaj „%s”", 'Odinstalować „%s”? Dane zostaną usunięte.', 'Anuluj'),
 }
 S = L.get(os.environ.get("LANG", "en")[:2], L["en"])
 
@@ -350,6 +351,9 @@ class Home(Gtk.Application):
         return True
 
     def uninstall(self, info, fx, web, flat):
+        import fxosui
+        if not fxosui.confirm(self.win, S[6] % display_name(info), S[3], S[7], danger=True):
+            return
         if fx:
             subprocess.call(["fxos-appinstall", "--remove", fx])
         elif web:

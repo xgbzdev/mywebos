@@ -211,6 +211,27 @@ def install_hosted(url, timeout=20):
     return meta
 
 
+def peek(source):
+    """Return (name, developer) of a package without installing it."""
+    path = os.path.abspath(os.path.expanduser(source))
+    try:
+        if os.path.isfile(path) and path.endswith(".webapp"):
+            m = _read_manifest(path)
+        elif os.path.isdir(path):
+            m = _read_manifest(os.path.join(path, "manifest.webapp"))
+        elif zipfile.is_zipfile(path):
+            with zipfile.ZipFile(path) as z:
+                names = [n for n in z.namelist() if n.endswith("manifest.webapp")]
+                if not names:
+                    raise AppError("no manifest.webapp in this package")
+                m = json.loads(z.read(sorted(names, key=len)[0]).decode("utf-8-sig"))
+        else:
+            return (source, "")
+    except (ValueError, KeyError) as e:
+        raise AppError("manifest.webapp is not valid (%s)" % e)
+    return (m.get("name") or "App", (m.get("developer") or {}).get("name", ""))
+
+
 def install(source):
     if re.match(r"^https?://", source) or (not os.path.exists(os.path.expanduser(source))
                                             and "." in source and "/" in source):

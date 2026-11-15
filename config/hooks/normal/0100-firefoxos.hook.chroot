@@ -23,7 +23,7 @@ mkdir -p /etc/lightdm/lightdm-gtk-greeter.conf.d
 cat > /etc/lightdm/lightdm-gtk-greeter.conf.d/50-firefoxos.conf <<'EOF'
 [greeter]
 background=/usr/share/firefoxos/wallpapers/default.png
-theme-name=Adwaita
+theme-name=FirefoxOS
 icon-theme-name=Papirus
 font-name=Noto Sans 11
 clock-format=%H:%M  %A, %B %d

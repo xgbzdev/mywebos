@@ -2,7 +2,11 @@
 """Firefox OS welcome wizard: language, keyboard, network, apps, try-or-install."""
 import os
 import subprocess
+import sys
+
 import gi
+
+sys.path.insert(0, "/usr/lib/firefoxos")
 
 gi.require_version("Gtk", "3.0")
 from gi.repository import Gtk, Gdk  # noqa: E402
@@ -95,14 +99,18 @@ T = {
 }
 
 CSS = b"""
-.header { background-image: linear-gradient(90deg, #ff9a1f, #e8481c); color: white; padding: 18px 22px; }
-.header .step { font-size: 9pt; opacity: .9; }
-.header .title { font-size: 17pt; }
-.header .sub { font-size: 10pt; opacity: .95; }
-.lang-btn { min-width: 150px; min-height: 34px; }
-.lang-btn:checked { background: #e3f6fc; border-color: #00a5d6; }
-.primary { background-image: none; background-color: #00a5d6; color: white; border-color: #0095c2; }
-.footer { background: #f4f4f4; padding: 10px 18px; }
+window.fxwelcome { background-color: #2d2d2d; }
+.header { background-color: #1f1f1f; color: white; padding: 18px 22px; border-bottom: 1px solid #555; }
+.header .step { font-size: 9pt; color: #00caf2; }
+.header .title { font-size: 17pt; color: #ffffff; }
+.header .sub { font-size: 10pt; color: #bdbdbd; }
+.body label { color: #f2f2f2; }
+.lang-btn { min-width: 150px; min-height: 38px; }
+.lang-btn:checked { background-image: none; background-color: #00caf2; border-color: #00a6c9; color: #fff; }
+.primary { background-image: none; background-color: #00caf2; color: white; border-color: #00a6c9; }
+.footer { background-color: #1f1f1f; padding: 14px 16px; border-top: 1px solid #444; }
+.footer button { min-height: 40px; font-size: 12pt; }
+.dots { color: #8a8a8a; }
 """
 
 
@@ -131,6 +139,8 @@ class Welcome(Gtk.Window):
         self.start_lang = self.lang
         self.kbd = next((k for c, _, _, k in LANGS if c == self.lang), "us")
         self.step = 0
+        self.get_style_context().add_class("fxwelcome")
+        self.set_decorated(False)
         self.root = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
         self.add(self.root)
         self.render()
@@ -158,22 +168,26 @@ class Welcome(Gtk.Window):
         self.root.pack_start(head, False, False, 0)
 
         body = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=10, margin=18)
+        body.get_style_context().add_class("body")
         getattr(self, "page%d" % self.step)(body)
         self.root.pack_start(body, True, True, 0)
 
-        foot = Gtk.Box(spacing=8)
+        foot = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=8)
         foot.get_style_context().add_class("footer")
-        if self.step > 0:
-            back = Gtk.Button(label=self.t(17))
-            back.connect("clicked", lambda *_: self.go(-1))
-            foot.pack_start(back, False, False, 0)
         dots = Gtk.Label(label=" ".join("●" if i == self.step else "○" for i in range(5)))
-        foot.set_center_widget(dots)
+        dots.get_style_context().add_class("dots")
+        foot.pack_start(dots, False, False, 0)
+        row = Gtk.Box(spacing=14, homogeneous=True)
+        back = Gtk.Button(label=self.t(17))
+        back.set_sensitive(self.step > 0)
+        back.connect("clicked", lambda *_: self.go(-1))
+        row.pack_start(back, True, True, 0)
         if self.step < 4:
             nxt = Gtk.Button(label=self.t(16))
             nxt.get_style_context().add_class("primary")
             nxt.connect("clicked", lambda *_: self.go(1))
-            foot.pack_end(nxt, False, False, 0)
+            row.pack_start(nxt, True, True, 0)
+        foot.pack_start(row, False, False, 0)
         self.root.pack_end(foot, False, False, 0)
         self.show_all()
 
@@ -273,11 +287,11 @@ class Welcome(Gtk.Window):
         if install:
             run("fxos-install")
         elif self.lang != self.start_lang:
-            dlg = Gtk.MessageDialog(transient_for=self, buttons=Gtk.ButtonsType.YES_NO,
-                                    message_type=Gtk.MessageType.QUESTION, text=self.t(20))
-            if dlg.run() == Gtk.ResponseType.YES:
+            import fxosui
+            cancel = {"it": "Annulla", "el": "Ακύρωση", "es": "Cancelar", "fr": "Annuler",
+                      "de": "Abbrechen", "pt": "Cancelar", "pl": "Anuluj"}.get(self.lang, "Cancel")
+            if fxosui.confirm(self, self.t(20), "OK", cancel):
                 run("xfce4-session-logout", "--logout", "--fast")
-            dlg.destroy()
         Gtk.main_quit()
 
 

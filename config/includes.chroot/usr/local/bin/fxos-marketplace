@@ -16,6 +16,11 @@ from gi.repository import Gtk, GLib, Gdk  # noqa: E402
 
 sys.path.insert(0, "/usr/lib/firefoxos")
 import fxosapps  # noqa: E402
+import fxosui  # noqa: E402
+
+
+def ask_remove(parent, name):
+    return fxosui.confirm(parent, "%s “%s”?" % (S["remove"], name), S["remove"], S.get("cancel", "Cancel"), danger=True)
 
 CATALOG = "/usr/share/firefoxos/marketplace/catalog.json"
 HOME = os.path.expanduser("~")
@@ -35,7 +40,7 @@ L = {
                add="Aggiungi un sito come app", name="Nome", url="Indirizzo (https://…)",
                more="Altre app Linux (GNOME Software)", working="Attendi…", done="Installata",
                fail="Errore – controlla la connessione",
-               fxos="Installa un'app Firefox OS (manifest.webapp)", fxfile="Da file (.zip)…", fxurl="https://…/manifest.webapp"),
+               cancel="Annulla", fxos="Installa un'app Firefox OS (manifest.webapp)", fxfile="Da file (.zip)…", fxurl="https://…/manifest.webapp"),
     "es": dict(title="Marketplace", web="Apps de Firefox OS", linux="Apps de Linux", installed="Instaladas",
                install="Instalar", remove="Quitar", open="Abrir", search="Buscar en Flathub…",
                add="Añadir una web como app", name="Nombre", url="Dirección (https://…)",
@@ -204,7 +209,7 @@ class Market(Gtk.Window):
         for app in cat["webapps"]:
             if is_web_installed(app["id"]):
                 btns = [(S["open"], lambda b, a=app: subprocess.Popen(["fxos-webapp", a["id"], a["url"]]), False),
-                        (S["remove"], lambda b, a=app: (remove_web(a["id"]), self.refresh()), False)]
+                        (S["remove"], lambda b, a=app: ask_remove(self, a["name"]) and (remove_web(a["id"]), self.refresh()), False)]
             else:
                 btns = [(S["install"], lambda b, a=app: (install_web(a), self.refresh()), True)]
             flow.add(self.card(app["name"], "%s · %s" % (app.get("category", ""), app.get("desc", "")),
@@ -333,6 +338,8 @@ class Market(Gtk.Window):
         threading.Thread(target=work, daemon=True).start()
 
     def flatpak(self, btn, action, app):
+        if action == "uninstall" and not ask_remove(self, app.get("name", app["id"])):
+            return
         btn.set_sensitive(False)
         btn.set_label(S["working"])
 
@@ -355,12 +362,12 @@ class Market(Gtk.Window):
         for app in cat["webapps"]:
             if is_web_installed(app["id"]):
                 flow.add(self.card(app["name"], S["web"],
-                                   [(S["remove"], lambda b, a=app: (remove_web(a["id"]), self.refresh()), False)],
+                                   [(S["remove"], lambda b, a=app: ask_remove(self, a["name"]) and (remove_web(a["id"]), self.refresh()), False)],
                                    app.get("color")))
         for a in fxosapps.list_apps():
             flow.add(self.card(a["name"], "Firefox OS app · %s %s" % (a["type"], a.get("version", "")),
                                [(S["open"], lambda b, i=a["id"]: subprocess.Popen(["fxos-apprun", i]), False),
-                                (S["remove"], lambda b, i=a["id"]: (fxosapps.uninstall(i), self.refresh()), False)]))
+                                (S["remove"], lambda b, i=a["id"], n=a["name"]: ask_remove(self, n) and (fxosapps.uninstall(i), self.refresh()), False)]))
         for app_id in sorted(flatpak_installed()):
             flow.add(self.card(app_id.split(".")[-1], app_id,
                                [(S["remove"], lambda b, i=app_id: self.flatpak(b, "uninstall", {"id": i, "name": i}), False)]))

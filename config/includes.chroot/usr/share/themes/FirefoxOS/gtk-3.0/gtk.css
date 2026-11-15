@@ -1,0 +1,45 @@
+/* Firefox OS look on top of Adwaita */
+@import url("resource:///org/gtk/libgtk/theme/Adwaita/gtk-contained.css");
+
+@define-color fx_cyan #00caf2;
+@define-color fx_cyan_dark #00a6c9;
+@define-color theme_selected_bg_color #00b8de;
+@define-color accent_bg_color #00b8de;
+
+button {
+  border-radius: 3px; border: 1px solid #b4b4b4;
+  background-image: linear-gradient(to bottom, #f7f7f7, #dadada);
+  box-shadow: none; text-shadow: none; padding: 5px 14px; color: #333;
+}
+button:hover { background-image: linear-gradient(to bottom, #fdfdfd, #e3e3e3); }
+button:active, button:checked { background-image: none; background-color: #c9c9c9; }
+button:disabled { color: #999; background-image: linear-gradient(to bottom, #f3f3f3, #e8e8e8); }
+button.flat { background-image: none; border-color: transparent; }
+
+button.suggested-action, button.primary {
+  background-image: none; background-color: @fx_cyan; border-color: @fx_cyan_dark; color: #fff;
+}
+button.suggested-action:hover, button.primary:hover { background-color: #22d4f6; }
+button.suggested-action:active, button.primary:active { background-color: @fx_cyan_dark; }
+button.destructive-action {
+  background-image: none; background-color: #e51e1e; border-color: #c11616; color: #fff;
+}
+
+entry { border-radius: 3px; }
+entry:focus { border-color: @fx_cyan; box-shadow: inset 0 0 0 1px @fx_cyan; }
+check:checked, radio:checked { background-image: none; background-color: @fx_cyan; border-color: @fx_cyan_dark; color: #fff; }
+switch:checked { background-color: @fx_cyan; border-color: @fx_cyan_dark; }
+progressbar progress, scale highlight, levelbar block.filled { background-color: @fx_cyan; border-color: @fx_cyan_dark; }
+notebook > header tab:checked { box-shadow: inset 0 -3px @fx_cyan; }
+headerbar, .titlebar { background-image: none; background-color: #2b2b2b; color: #fff; border-color: #111; }
+headerbar button { color: #fff; background-image: none; background-color: transparent; border-color: transparent; }
+menu menuitem:hover, popover modelbutton:hover { background-color: @fx_cyan; color: #fff; }
+selection, *:selected { background-color: #00b8de; color: #fff; }
+
+/* Firefox OS 1.x style confirmation dialogs (fxosui) */
+.fxos-dialog { background-color: #2d2d2d; }
+.fxos-dialog .fx-title { color: #fff; font-size: 13pt; font-weight: bold; }
+.fxos-dialog .fx-msg { color: #f2f2f2; font-size: 14pt; }
+.fxos-dialog .fx-rule { background-color: #555; min-height: 1px; }
+.fxos-dialog .fx-buttons { background-color: #1f1f1f; padding: 14px 16px; }
+.fxos-dialog .fx-buttons button { min-height: 42px; font-size: 13pt; }

@@ -1,59 +1,76 @@
-# Firefox OS boot splash: glowing globe, orbiting ring, title and pulsing dots
-Window.SetBackgroundTopColor(0.30, 0.62, 0.17);
-Window.SetBackgroundBottomColor(0.07, 0.30, 0.09);
+# Firefox OS boot splash: a rocket hovering in space with a flickering flame,
+# twinkling stars, the title and pulsing loading dots.
+Window.SetBackgroundTopColor(0.23, 0.24, 0.25);
+Window.SetBackgroundBottomColor(0.11, 0.12, 0.13);
 
 W = Window.GetWidth(); H = Window.GetHeight();
-cx = W / 2; cy = H / 2 - 50;
+cx = W / 2; cy = H / 2 - 60;
+
+# stars
+star_image = Image("star.png");
+for (i = 0; i < 24; i++) {
+  star[i] = Sprite(star_image);
+  sx[i] = Math.Int(Math.Random() * W);
+  sy[i] = Math.Int(Math.Random() * H);
+  sp[i] = Math.Random() * 6.28;
+  star[i].SetPosition(sx[i], sy[i], 0);
+  star[i].SetOpacity(0);
+}
 
 glow.image = Image("glow.png");
 glow.sprite = Sprite(glow.image);
-glow.sprite.SetPosition(cx - glow.image.GetWidth() / 2, cy - glow.image.GetHeight() / 2, 0);
+glow.sprite.SetPosition(cx - glow.image.GetWidth() / 2, cy - glow.image.GetHeight() / 2, 1);
+glow.sprite.SetOpacity(0);
 
-ring.image = Image("ring.png");
-ring.sprite = Sprite();
-ring.sprite.SetZ(1);
-
-logo.image = Image("logo.png");
-logo.sprite = Sprite(logo.image);
-logo.sprite.SetPosition(cx - logo.image.GetWidth() / 2, cy - logo.image.GetHeight() / 2, 2);
-logo.sprite.SetOpacity(0);
+flame1 = Image("flame1.png");
+flame2 = Image("flame2.png");
+flame.sprite = Sprite(flame1);
+rocket.image = Image("rocket.png");
+rocket.sprite = Sprite(rocket.image);
+rw = rocket.image.GetWidth(); rh = rocket.image.GetHeight();
 
 title.image = Image("title.png");
 title.sprite = Sprite(title.image);
-title.sprite.SetPosition(cx - title.image.GetWidth() / 2, cy + 140, 2);
+title.sprite.SetPosition(cx - title.image.GetWidth() / 2, cy + 150, 3);
 title.sprite.SetOpacity(0);
 
 dot_image = Image("dot.png");
 for (i = 0; i < 3; i++) {
   dot[i] = Sprite(dot_image);
-  dot[i].SetPosition(cx - 34 + i * 28, cy + 210, 2);
+  dot[i].SetPosition(cx - 34 + i * 28, cy + 220, 3);
   dot[i].SetOpacity(0.2);
 }
 
 t = 0;
 fun refresh_callback () {
   t++;
-  # globe fades and "pops" in
-  a = Math.Min(t / 40, 1);
-  logo.sprite.SetOpacity(a);
-  # breathing glow
-  glow.sprite.SetOpacity(0.55 + 0.45 * Math.Sin(t * 0.05));
-  # ring orbits the globe
-  r = ring.image.Rotate(t * 0.08);
-  ring.sprite.SetImage(r);
-  ring.sprite.SetPosition(cx - r.GetWidth() / 2, cy - r.GetHeight() / 2, 1);
-  ring.sprite.SetOpacity(a);
-  # title slides up while fading in
-  ta = Math.Min(Math.Max((t - 25) / 35, 0), 1);
+  # entrance: the rocket flies in from the lower left, then hovers
+  e = Math.Min(t / 45, 1);
+  e = 1 - (1 - e) * (1 - e);                 # ease-out
+  bob = Math.Sin(t * 0.07) * 6;
+  x = cx - rw / 2 - 160 * (1 - e) + bob * 0.5;
+  y = cy - rh / 2 + 160 * (1 - e) - bob;
+  rocket.sprite.SetPosition(x, y, 3);
+  rocket.sprite.SetOpacity(e);
+  flame.sprite.SetPosition(x, y, 2);
+  if (Math.Int(t / 3) - 2 * Math.Int(t / 6) == 0) flame.sprite.SetImage(flame1);
+  else flame.sprite.SetImage(flame2);
+  flame.sprite.SetOpacity(e);
+  glow.sprite.SetOpacity(e * (0.6 + 0.4 * Math.Sin(t * 0.09)));
+
+  for (i = 0; i < 24; i++) {
+    star[i].SetOpacity(0.15 + 0.55 * (Math.Sin(t * 0.05 + sp[i]) + 1) / 2);
+  }
+
+  ta = Math.Min(Math.Max((t - 30) / 30, 0), 1);
   title.sprite.SetOpacity(ta);
-  title.sprite.SetY(cy + 160 - 20 * ta);
-  # loading dots
+  title.sprite.SetY(cy + 170 - 20 * ta);
+
   for (i = 0; i < 3; i++) {
     dot[i].SetOpacity(0.25 + 0.75 * (Math.Sin(t * 0.12 - i * 0.9) + 1) / 2);
   }
 }
 Plymouth.SetRefreshFunction(refresh_callback);
 
-# keep password prompts usable (e.g. encrypted disks)
 fun display_normal_callback () { }
 Plymouth.SetDisplayNormalFunction(display_normal_callback);
