@@ -37,7 +37,7 @@ key("tab", 1)                   # edit the boot line: switch on the memory logge
 type_text(" b2l.memlog")
 key("ret")
 shot("splash", 25)
-shot("welcome", 200)            # 512 MB + emulated disk: give it time
+shot("welcome", 260)            # 512 MB + emulated disk: give it time
 key("alt-f4", 6)                # close the welcome wizard (never closes the home screen)
 shot("home", 10)
 key("alt-f4", 4)                # pressing it on the home screen must do nothing
