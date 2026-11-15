@@ -24,6 +24,7 @@ apps = """
       <decor>no</decor><maximized>yes</maximized><layer>below</layer>
       <skip_taskbar>yes</skip_taskbar><skip_pager>yes</skip_pager><focus>yes</focus>
       <iconic>no</iconic>
+      <position force="yes"><x>0</x><y>0</y></position>
     </application>
 """
 if "<applications>" in s:
@@ -32,6 +33,7 @@ else:
     s = s.replace("</openbox_config>", "<applications>" + apps + "</applications>\n</openbox_config>", 1)
 s = re.sub(r"<number>\d+</number>", "<number>1</number>", s, count=1)       # one desktop
 s = re.sub(r"<name>Clearlooks</name>", "<name>Onyx</name>", s, count=1)
+s = s.replace("<animateIconify>yes</animateIconify>", "<animateIconify>no</animateIconify>")   # instant Start button
 open(p, "w").write(s)
 P
 

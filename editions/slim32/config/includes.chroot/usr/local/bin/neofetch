@@ -1,0 +1,3 @@
+#!/bin/sh
+# neofetch with the B2L rocket logo
+exec /usr/bin/neofetch --ascii /usr/share/b2l/neofetch/rocket.txt --ascii_colors 1 7 4 3 "$@"

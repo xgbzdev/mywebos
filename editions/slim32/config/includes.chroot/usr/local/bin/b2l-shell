@@ -15,12 +15,22 @@ user_pref("browser.warnOnQuit", false);
 user_pref("browser.download.useDownloadDir", true);
 user_pref("permissions.default.geo", 0);
 user_pref("dom.disable_beforeunload", true);
+user_pref("devtools.policy.disabled", true);
+user_pref("devtools.chrome.enabled", false);
+user_pref("browser.display.background_color", "#3a3d40");
+user_pref("browser.newtabpage.enabled", false);
+user_pref("browser.startup.homepage", "http://127.0.0.1:8090/");
+user_pref("ui.key.menuAccessKeyFocuses", false);
 J
 cat > "$P/chrome/userChrome.css" <<'C'
 /* B2L home screen: no browser interface at all */
 #TabsToolbar, #nav-bar, #PersonalToolbar, #sidebar-box, #sidebar-splitter,
 #titlebar, #toolbar-menubar, #notifications-toolbar, #statuspanel,
-#fullscr-toggler { visibility: collapse !important; }
+#fullscr-toggler, #findbar, .browserSidebarContainer findbar { visibility: collapse !important; }
+/* dark behind the page, so nothing grey shows while it redraws */
+#main-window, #browser, #tabbrowser-tabbox, #tabbrowser-tabpanels, browser { background-color: #3a3d40 !important; }
+/* no browser right-click menu, page source or inspector on the home screen */
+#contentAreaContextMenu { display: none !important; }
 C
 # A home screen that crashed (or was stopped when memory ran out) can leave its
 # old processes and profile lock behind; Firefox would then refuse to start
@@ -32,7 +42,7 @@ cleanup() {
         sleep 1
     done
     pkill -9 -f -- "--class B2LHome" 2>/dev/null
-    rm -f "$P/lock" "$P/.parentlock"
+    rm -f "$P/lock" "$P/.parentlock" "$P/xulstore.json"
 }
 
 while true; do

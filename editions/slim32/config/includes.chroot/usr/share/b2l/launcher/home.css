@@ -2,7 +2,7 @@
 * { box-sizing: border-box; }
 html, body { margin: 0; height: 100%; overflow: hidden; }
 body { font-family: "Fira Sans", "Open Sans", "DejaVu Sans", sans-serif; color: #fff;
-  background: #3a3d40 url("/static/wallpaper.png") center / cover no-repeat; user-select: none; }
+  background: #3a3d40 url("/api/wallpaper") center / cover no-repeat; user-select: none; }
 .hidden { display: none !important; }
 
 header { padding: 18px 0 8px; text-align: center; }
@@ -76,3 +76,11 @@ header { padding: 18px 0 8px; text-align: center; }
 .card span { display: block; margin-top: 10px; font-size: 15px; }
 .card .x { position: absolute; top: 4px; right: 6px; border: 0; background: none; color: #bbb; font-size: 24px; cursor: pointer; }
 .card .x:hover { color: #fff; }
+.wp-title { margin: 0 0 12px; color: #fff; font-size: 20px; text-align: center; }
+.wp-list { text-align: center; font-size: 0; max-height: 60vh; overflow-y: auto; }
+.wp { display: inline-block; width: 160px; height: 100px; margin: 6px; border: 3px solid transparent; border-radius: 6px;
+  background: #222 center / cover no-repeat; cursor: pointer; }
+.wp:hover { border-color: rgba(255,255,255,.5); }
+.wp.on { border-color: #00caf2; }
+.wp-files { display: block; margin: 14px auto 0; padding: 10px 22px; font: inherit; font-size: 16px; color: #fff;
+  background: #00caf2; border: 0; border-radius: 3px; cursor: pointer; }

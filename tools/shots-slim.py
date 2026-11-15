@@ -62,8 +62,23 @@ shot("terminal-open", 1)
 type_text("clear; free -m; ps -eo rss,comm --sort=-rss | head -n 9"); key("ret", 4)
 shot("memory-two-apps", 1)
 
+# neofetch with the rocket logo
+type_text("clear; neofetch"); key("ret", 8)
+shot("neofetch", 1)
+
 # 5. crash test: kill the home screen hard, it must come back on its own
 type_text("pkill -9 -f -- '--class B2LHome'"); key("ret", 2)
 shot("home-killed", 1)
 key("meta_l", 40)
 shot("home-after-crash", 2)
+
+# 6. wallpaper: Shift+F10 on the home screen -> Change wallpaper -> next one
+key("esc", 1); key("shift-f10", 2)
+shot("home-menu", 1)
+key("ret", 3)
+shot("wallpaper-picker", 1)
+key("tab", 1); key("ret", 4)
+shot("new-wallpaper", 2)
+# right-click must not give the browser menu / inspector
+key("ctrl-shift-i", 3); key("ctrl-u", 3)
+shot("no-inspector", 1)

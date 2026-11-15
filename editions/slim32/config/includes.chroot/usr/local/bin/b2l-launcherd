@@ -21,6 +21,7 @@ the HTML home screen:
 Only listens on 127.0.0.1. Actions need a secret token that is only written into
 the home page, and JSON bodies, so other websites can't start programs.
 """
+import base64
 import configparser
 import glob
 import json
@@ -59,7 +60,7 @@ HIDE = {"debian-xterm", "debian-uxterm", "openbox", "obconf", "tint2conf", "tint
         "install-debian", "calamares", "fxos-home", "b2l-home", "fxos-appinstall", "pcmanfm-desktop-pref",
         "python3.11", "vim", "lxterminal-preferences", "nm-applet", "volumeicon", "fxos-welcome",
         "lightdm-gtk-greeter-settings", "display-im6.q16", "org.freedesktop.IBus.Setup",
-        "mpv", "io.mpv.Mpv", "lxrandr", "pavucontrol", "nm-connection-editor"}
+        "mpv", "io.mpv.Mpv", "org.xfce.mousepad-settings", "lxrandr", "pavucontrol", "nm-connection-editor"}
 NICE = {
     "en": {"firefox-esr": "Firefox", "pcmanfm": "Files", "lxterminal": "Terminal",
            "org.xfce.mousepad": "Text Editor", "galculator": "Calculator", "org.xfce.ristretto": "Gallery",
@@ -188,6 +189,60 @@ def save_layout(d):
         json.dump(clean, fh, indent=1)
     os.replace(tmp, LAYOUT)
     return clean
+
+
+# ---------------------------------------------------------------- wallpaper
+WP_DIR = "/usr/share/firefoxos/wallpapers"
+WP_CONF = os.path.join(CONF, "wallpaper.json")
+WP_CUSTOM = os.path.join(CONF, "wallpaper-custom")
+IMG_MAGIC = ((b"\xff\xd8\xff", "image/jpeg"), (b"\x89PNG", "image/png"), (b"GIF8", "image/gif"))
+
+
+def builtin_wallpapers():
+    out = {}
+    for f in sorted(glob.glob(os.path.join(WP_DIR, "*"))):
+        n, ext = os.path.splitext(os.path.basename(f))
+        if ext.lower() in (".png", ".jpg", ".jpeg") and not n.startswith("grub") and re.match(r"^[a-z0-9_-]{1,40}$", n):
+            out[n] = f
+    return out
+
+
+def wp_state():
+    try:
+        with open(WP_CONF) as fh:
+            d = json.load(fh)
+        if isinstance(d, dict):
+            return {"name": str(d.get("name", "default")), "v": int(d.get("v", 0))}
+    except (OSError, ValueError, TypeError):
+        pass
+    return {"name": "default", "v": 0}
+
+
+def wp_save(name):
+    st = wp_state()
+    st = {"name": name, "v": st["v"] + 1}
+    tmp = WP_CONF + ".tmp"
+    with open(tmp, "w") as fh:
+        json.dump(st, fh)
+    os.replace(tmp, WP_CONF)
+    return st
+
+
+def wp_path(name=None):
+    name = name or wp_state()["name"]
+    if name == "custom" and os.path.isfile(WP_CUSTOM):
+        return WP_CUSTOM
+    b = builtin_wallpapers()
+    return b.get(name) or b.get("default") or os.path.join(WEB, "wallpaper.png")
+
+
+def img_type(data):
+    for magic, ctype in IMG_MAGIC:
+        if data.startswith(magic):
+            return ctype
+    if data[:4] == b"RIFF" and data[8:12] == b"WEBP":
+        return "image/webp"
+    return None
 
 
 def _expendable():
@@ -327,6 +382,20 @@ class Handler(BaseHTTPRequestHandler):
             ctype = "image/svg+xml" if p.endswith(".svg") else (mimetypes.guess_type(p)[0] or "image/png")
             with open(p, "rb") as fh:
                 return self.send(200, fh.read(), ctype, {"Cache-Control": "max-age=3600"})
+        if u.path in ("/api/wallpaper", "/api/wallpaper-thumb"):
+            name = (urllib.parse.parse_qs(u.query).get("name") or [None])[0] if u.path.endswith("thumb") else None
+            p = wp_path(name)
+            try:
+                with open(p, "rb") as fh:
+                    data = fh.read()
+            except OSError:
+                return self.send(404)
+            return self.send(200, data, img_type(data) or "application/octet-stream",
+                             {"Cache-Control": "max-age=3600"} if name else None)
+        if u.path == "/api/wallpapers":
+            st = wp_state()
+            return self.json({"current": st["name"], "v": st["v"], "list": list(builtin_wallpapers()),
+                              "custom": os.path.isfile(WP_CUSTOM)})
         if u.path == "/health":
             return self.send(200, "ok")
         if u.path == "/api/events":
@@ -339,7 +408,7 @@ class Handler(BaseHTTPRequestHandler):
             n = int(self.headers.get("Content-Length") or 0)
         except ValueError:
             n = 0
-        if n > 1_000_000:
+        if n > (6_000_000 if u.path == "/api/wallpaper" else 1_000_000):
             return self.send(413, "too big")
         raw = self.rfile.read(n) if n else b""          # always read the body first
         if self.host() not in ("127.0.0.1", "localhost"):
@@ -356,6 +425,24 @@ class Handler(BaseHTTPRequestHandler):
             return self.send(403, "bad token")
         if u.path == "/api/layout":
             return self.json(save_layout(data.get("layout") or {}))
+        if u.path == "/api/wallpaper":
+            img = data.get("image")
+            if img:
+                m = re.match(r"^data:image/[a-z+]+;base64,([A-Za-z0-9+/=]+)$", str(img))
+                if not m:
+                    return self.send(400, "bad image")
+                raw = base64.b64decode(m.group(1))
+                if len(raw) > 4_500_000 or not img_type(raw):
+                    return self.send(400, "bad image")
+                tmp = WP_CUSTOM + ".tmp"
+                with open(tmp, "wb") as fh:
+                    fh.write(raw)
+                os.replace(tmp, WP_CUSTOM)
+                return self.json(wp_save("custom"))
+            name = str(data.get("name", ""))
+            if name in builtin_wallpapers() or (name == "custom" and os.path.isfile(WP_CUSTOM)):
+                return self.json(wp_save(name))
+            return self.send(400, "no such wallpaper")
         if u.path == "/api/home":
             with HOME_EVENT:
                 HOME_SEQ[0] += 1

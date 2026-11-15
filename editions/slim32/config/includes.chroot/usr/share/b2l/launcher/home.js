@@ -4,35 +4,43 @@
   var $ = function (id) { return document.getElementById(id); };
   var LANG = (document.documentElement.lang || "en").slice(0, 2);
   var T = {
-    en: { openApps: "Open apps", noApps: "No open apps", search: "Search apps or the web", newFolder: "New folder", folder: "Folder", addTo: "Move to “%s”",
+    en: { wallpaper: "Change wallpaper", wpTitle: "Wallpaper", fromFiles: "From my files…", badImage: "This image can't be used.",
+          openApps: "Open apps", noApps: "No open apps", search: "Search apps or the web", newFolder: "New folder", folder: "Folder", addTo: "Move to “%s”",
           outOfFolder: "Move out of folder", toDock: "Add to dock", fromDock: "Remove from dock",
           uninstall: "Uninstall", uninstallQ: "Uninstall “%s”?", rename: "Rename folder", delFolder: "Remove folder",
           cancel: "Cancel", dockFull: "The dock is full (max 6).", cantOpen: "Couldn't open “%s”." },
-    it: { openApps: "App aperte", noApps: "Nessuna app aperta", search: "Cerca app o nel web", newFolder: "Nuova cartella", folder: "Cartella", addTo: "Sposta in “%s”",
+    it: { wallpaper: "Cambia sfondo", wpTitle: "Sfondo", fromFiles: "Dai miei file…", badImage: "Questa immagine non può essere usata.",
+          openApps: "App aperte", noApps: "Nessuna app aperta", search: "Cerca app o nel web", newFolder: "Nuova cartella", folder: "Cartella", addTo: "Sposta in “%s”",
           outOfFolder: "Togli dalla cartella", toDock: "Aggiungi al dock", fromDock: "Togli dal dock",
           uninstall: "Disinstalla", uninstallQ: "Disinstallare “%s”?", rename: "Rinomina cartella", delFolder: "Rimuovi cartella",
           cancel: "Annulla", dockFull: "Il dock è pieno (max 6).", cantOpen: "Impossibile aprire “%s”." },
-    el: { openApps: "Ανοιχτές εφαρμογές", noApps: "Καμία ανοιχτή εφαρμογή", search: "Αναζήτηση εφαρμογών ή στο web", newFolder: "Νέος φάκελος", folder: "Φάκελος", addTo: "Μετακίνηση στο «%s»",
+    el: { wallpaper: "Αλλαγή ταπετσαρίας", wpTitle: "Ταπετσαρία", fromFiles: "Από τα αρχεία μου…", badImage: "Αυτή η εικόνα δεν μπορεί να χρησιμοποιηθεί.",
+          openApps: "Ανοιχτές εφαρμογές", noApps: "Καμία ανοιχτή εφαρμογή", search: "Αναζήτηση εφαρμογών ή στο web", newFolder: "Νέος φάκελος", folder: "Φάκελος", addTo: "Μετακίνηση στο «%s»",
           outOfFolder: "Έξω από τον φάκελο", toDock: "Προσθήκη στο dock", fromDock: "Αφαίρεση από το dock",
           uninstall: "Απεγκατάσταση", uninstallQ: "Απεγκατάσταση του «%s»;", rename: "Μετονομασία φακέλου", delFolder: "Αφαίρεση φακέλου",
           cancel: "Ακύρωση", dockFull: "Το dock είναι γεμάτο (έως 6).", cantOpen: "Δεν ήταν δυνατό να ανοίξει το «%s»." },
-    es: { openApps: "Apps abiertas", noApps: "No hay apps abiertas", search: "Busca apps o en la web", newFolder: "Nueva carpeta", folder: "Carpeta", addTo: "Mover a “%s”",
+    es: { wallpaper: "Cambiar fondo", wpTitle: "Fondo de pantalla", fromFiles: "De mis archivos…", badImage: "No se puede usar esta imagen.",
+          openApps: "Apps abiertas", noApps: "No hay apps abiertas", search: "Busca apps o en la web", newFolder: "Nueva carpeta", folder: "Carpeta", addTo: "Mover a “%s”",
           outOfFolder: "Sacar de la carpeta", toDock: "Añadir al dock", fromDock: "Quitar del dock",
           uninstall: "Desinstalar", uninstallQ: "¿Desinstalar “%s”?", rename: "Renombrar carpeta", delFolder: "Quitar carpeta",
           cancel: "Cancelar", dockFull: "El dock está lleno (máx. 6).", cantOpen: "No se pudo abrir “%s”." },
-    fr: { openApps: "Applis ouvertes", noApps: "Aucune appli ouverte", search: "Rechercher des applis ou sur le web", newFolder: "Nouveau dossier", folder: "Dossier", addTo: "Déplacer dans « %s »",
+    fr: { wallpaper: "Changer le fond d'écran", wpTitle: "Fond d'écran", fromFiles: "Depuis mes fichiers…", badImage: "Impossible d'utiliser cette image.",
+          openApps: "Applis ouvertes", noApps: "Aucune appli ouverte", search: "Rechercher des applis ou sur le web", newFolder: "Nouveau dossier", folder: "Dossier", addTo: "Déplacer dans « %s »",
           outOfFolder: "Sortir du dossier", toDock: "Ajouter au dock", fromDock: "Retirer du dock",
           uninstall: "Désinstaller", uninstallQ: "Désinstaller « %s » ?", rename: "Renommer le dossier", delFolder: "Supprimer le dossier",
           cancel: "Annuler", dockFull: "Le dock est plein (6 max).", cantOpen: "Impossible d'ouvrir « %s »." },
-    de: { openApps: "Offene Apps", noApps: "Keine offenen Apps", search: "Apps oder Web durchsuchen", newFolder: "Neuer Ordner", folder: "Ordner", addTo: "In „%s“ verschieben",
+    de: { wallpaper: "Hintergrund ändern", wpTitle: "Hintergrund", fromFiles: "Aus meinen Dateien…", badImage: "Dieses Bild kann nicht verwendet werden.",
+          openApps: "Offene Apps", noApps: "Keine offenen Apps", search: "Apps oder Web durchsuchen", newFolder: "Neuer Ordner", folder: "Ordner", addTo: "In „%s“ verschieben",
           outOfFolder: "Aus dem Ordner nehmen", toDock: "Zum Dock hinzufügen", fromDock: "Aus dem Dock entfernen",
           uninstall: "Deinstallieren", uninstallQ: "„%s“ deinstallieren?", rename: "Ordner umbenennen", delFolder: "Ordner entfernen",
           cancel: "Abbrechen", dockFull: "Das Dock ist voll (max. 6).", cantOpen: "„%s“ konnte nicht geöffnet werden." },
-    pt: { openApps: "Apps abertas", noApps: "Nenhuma app aberta", search: "Pesquisar apps ou na web", newFolder: "Nova pasta", folder: "Pasta", addTo: "Mover para “%s”",
+    pt: { wallpaper: "Mudar papel de parede", wpTitle: "Papel de parede", fromFiles: "Dos meus arquivos…", badImage: "Esta imagem não pode ser usada.",
+          openApps: "Apps abertas", noApps: "Nenhuma app aberta", search: "Pesquisar apps ou na web", newFolder: "Nova pasta", folder: "Pasta", addTo: "Mover para “%s”",
           outOfFolder: "Tirar da pasta", toDock: "Adicionar à dock", fromDock: "Remover da dock",
           uninstall: "Desinstalar", uninstallQ: "Desinstalar “%s”?", rename: "Mudar nome da pasta", delFolder: "Remover pasta",
           cancel: "Cancelar", dockFull: "A dock está cheia (máx. 6).", cantOpen: "Não foi possível abrir “%s”." },
-    pl: { openApps: "Otwarte aplikacje", noApps: "Brak otwartych aplikacji", search: "Szukaj aplikacji lub w sieci", newFolder: "Nowy folder", folder: "Folder", addTo: "Przenieś do „%s”",
+    pl: { wallpaper: "Zmień tapetę", wpTitle: "Tapeta", fromFiles: "Z moich plików…", badImage: "Nie można użyć tego obrazu.",
+          openApps: "Otwarte aplikacje", noApps: "Brak otwartych aplikacji", search: "Szukaj aplikacji lub w sieci", newFolder: "Nowy folder", folder: "Folder", addTo: "Przenieś do „%s”",
           outOfFolder: "Wyjmij z folderu", toDock: "Dodaj do docka", fromDock: "Usuń z docka",
           uninstall: "Odinstaluj", uninstallQ: "Odinstalować „%s”?", rename: "Zmień nazwę folderu", delFolder: "Usuń folder",
           cancel: "Anuluj", dockFull: "Dock jest pełny (maks. 6).", cantOpen: "Nie można otworzyć „%s”." }
@@ -53,12 +61,19 @@
   }
   function saveLayout() { api("POST", "/api/layout", { layout: layout }); }
 
+  var lastKey = "";
   function load() {
     api("GET", "/api/apps", null, function (st, list) {
       if (!list) { setTimeout(load, 1500); return; }
-      apps = {};
-      list.forEach(function (a) { apps[a.id] = a; });
-      api("GET", "/api/layout", null, function (s2, lay) { layout = lay || layout; normalise(); render(); });
+      api("GET", "/api/layout", null, function (s2, lay) {
+        /* nothing changed: keep what is on screen (no flicker when coming back) */
+        var key = JSON.stringify([list, lay]);
+        if (key === lastKey) { return; }
+        lastKey = key;
+        apps = {};
+        list.forEach(function (a) { apps[a.id] = a; });
+        layout = lay || layout; normalise(); render();
+      });
     });
   }
   /* Keep the layout in step with what is installed: new apps appear at the end. */
@@ -289,6 +304,7 @@
       box.appendChild(el);
     });
     $("menu").classList.remove("hidden");
+    box.firstChild.focus();
   }
   function appMenu(id, where) {
     var a = apps[id], b = [];
@@ -364,6 +380,68 @@
     if (e.key === "Escape") { if (!$("cards").classList.contains("hidden")) { $("cards").classList.add("hidden"); } else { closeOverlays(); } }
     else if (!current && (document.activeElement === document.body || /tile/.test(document.activeElement.className)) && e.key.length === 1 && e.key !== " " && !e.ctrlKey && !e.altKey) { $("search").focus(); }
   });
+
+  /* ---------- wallpaper ---------- */
+  function setWallpaper(v) { document.body.style.backgroundImage = 'url("/api/wallpaper?v=' + v + '")'; }
+  function showWallpapers() {
+    api("GET", "/api/wallpapers", null, function (st, d) {
+      if (!d) { return; }
+      var box = $("wp-list"); box.innerHTML = "";
+      var names = d.list.slice(); if (d.custom) { names.push("custom"); }
+      names.forEach(function (n) {
+        var b = document.createElement("button");
+        b.className = "wp" + (n === d.current ? " on" : "");
+        b.style.backgroundImage = 'url("/api/wallpaper-thumb?name=' + encodeURIComponent(n) + (n === "custom" ? "&v=" + d.v : "") + '")';
+        b.setAttribute("aria-label", n);
+        b.onclick = function () { pickWallpaper({ name: n }); };
+        box.appendChild(b);
+      });
+      $("wp").classList.remove("hidden");
+      (box.querySelector(".wp.on") || box.firstChild).focus();
+    });
+  }
+  function pickWallpaper(body) {
+    api("POST", "/api/wallpaper", body, function (st, d) {
+      if (st !== 200 || !d) { toast(t("badImage")); return; }
+      setWallpaper(d.v); $("wp").classList.add("hidden");
+    });
+  }
+  $("wp-title").textContent = t("wpTitle");
+  $("wp-files").textContent = t("fromFiles");
+  $("wp-files").onclick = function () { $("wp-input").click(); };
+  $("wp").onclick = function (e) { if (e.target === this) { this.classList.add("hidden"); } };
+  $("wp-input").onchange = function () {
+    var f = this.files && this.files[0]; this.value = "";
+    if (!f) { return; }
+    var url = URL.createObjectURL(f), img = new Image();
+    img.onerror = function () { URL.revokeObjectURL(url); toast(t("badImage")); };
+    img.onload = function () {
+      /* shrink to the screen size so it stays light on 512 MB */
+      var W = Math.max(screen.width, 800), H = Math.max(screen.height, 600);
+      var k = Math.min(1, Math.max(W / img.width, H / img.height));
+      var c = document.createElement("canvas");
+      c.width = Math.round(img.width * k); c.height = Math.round(img.height * k);
+      c.getContext("2d").drawImage(img, 0, 0, c.width, c.height);
+      URL.revokeObjectURL(url);
+      pickWallpaper({ image: c.toDataURL("image/jpeg", 0.85) });
+    };
+    img.src = url;
+  };
+  api("GET", "/api/wallpapers", null, function (st, d) { if (d) { setWallpaper(d.v); } });
+
+  /* the home screen is not a web page: no browser menu, no page source, no inspector */
+  document.addEventListener("contextmenu", function (e) {
+    if (e.defaultPrevented) { return; }
+    e.preventDefault();
+    if (!current && !e.target.closest(".overlay, .applayer")) { sheet(t("wpTitle"), [[t("wallpaper"), showWallpapers]]); }
+  });
+  document.addEventListener("keydown", function (e) {
+    var k = (e.key || "").toLowerCase();
+    if (e.key === "F12" || e.key === "F7" || e.key === "F6" ||
+        ((e.ctrlKey || e.metaKey) && (e.shiftKey ? "ijckemrpo".indexOf(k) >= 0 && k : "uspofghbdjlkie".indexOf(k) >= 0 && k))) {
+      e.preventDefault(); e.stopPropagation();
+    }
+  }, true);
 
   var tt;
   function toast(msg) { var el = $("toast"); el.textContent = msg; el.classList.remove("hidden"); clearTimeout(tt); tt = setTimeout(function () { el.classList.add("hidden"); }, 3000); }
