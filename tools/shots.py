@@ -18,7 +18,7 @@ def hmp(cmd):
         pass
     s.close()
 
-KEYS = {" ": "spc", ".": "dot", "-": "minus", "/": "slash", ":": "shift-semicolon", ";": "semicolon", "|": "shift-backslash", "_": "shift-minus", "*": "shift-8", '"': "shift-apostrophe", "~": "shift-grave_accent", ">": "shift-dot", "<": "shift-comma", "&": "shift-7"}
+KEYS = {" ": "spc", ".": "dot", "-": "minus", "/": "slash", ":": "shift-semicolon", ";": "semicolon", "|": "shift-backslash", "_": "shift-minus", "*": "shift-8", '"': "shift-apostrophe", "~": "shift-grave_accent", ">": "shift-dot", "<": "shift-comma", "&": "shift-7", "@": "shift-2", "!": "shift-1"}
 def key(k, wait=0.3):
     hmp("sendkey " + k); time.sleep(wait)
 def type_text(t):
@@ -63,6 +63,11 @@ key("alt-f4", 4)
 home_launch("firefox", "firefox", 60)
 key("alt-f4", 4)
 key("meta_l", 3); shot("home-again", 3)
+home_launch("firecloud", "firecloud", 25)
+key("tab"); type_text("screenshot-test@b2l.invalid"); key("tab"); type_text("not-the-password")
+key("tab"); key("tab"); key("tab"); key("ret")        # "Sign in": wrong password -> server answers
+shot("firecloud-server-reply", 6)
+key("alt-f4", 4)
 key("ctrl-alt-t", 8)
 type_text("setsid fxos-appinstall /usr/share/firefoxos/sample-apps/checklist.zip </dev/null &"); key("ret")
 shot("install-dialog", 8)

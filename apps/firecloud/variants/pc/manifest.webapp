@@ -1,0 +1,47 @@
+{
+  "name": "FireCloud",
+  "description": "Your personal space for photos, videos, apps and Find My Device",
+  "version": "1.0.0",
+  "launch_path": "/index.html",
+  "type": "web",
+  "developer": {
+    "name": "B2L – Back To Life"
+  },
+  "icons": {
+    "60": "/img/icon-60.png",
+    "128": "/img/icon-128.png",
+    "256": "/img/icon-256.png"
+  },
+  "orientation": "landscape",
+  "default_locale": "en",
+  "locales": {
+    "it": {
+      "name": "FireCloud",
+      "description": "Il tuo spazio per foto, video, app e Trova dispositivo"
+    },
+    "el": {
+      "name": "FireCloud",
+      "description": "Ο χώρος σας για φωτογραφίες, βίντεο, εφαρμογές και Εύρεση συσκευής"
+    },
+    "es": {
+      "name": "FireCloud",
+      "description": "Tu espacio para fotos, vídeos, apps y Buscar dispositivo"
+    },
+    "fr": {
+      "name": "FireCloud",
+      "description": "Votre espace pour photos, vidéos, applis et Localiser l'appareil"
+    },
+    "de": {
+      "name": "FireCloud",
+      "description": "Dein Bereich für Fotos, Videos, Apps und Gerät finden"
+    },
+    "pt": {
+      "name": "FireCloud",
+      "description": "O seu espaço para fotos, vídeos, apps e Encontrar dispositivo"
+    },
+    "pl": {
+      "name": "FireCloud",
+      "description": "Twoje miejsce na zdjęcia, filmy, aplikacje i Znajdź urządzenie"
+    }
+  }
+}

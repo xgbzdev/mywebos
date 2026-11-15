@@ -1,0 +1,99 @@
+/* FireCloud – Firefox OS 1.x/2.x look, works from 320x480 phones to PCs */
+* { box-sizing: border-box; -moz-box-sizing: border-box; }
+html, body { margin: 0; height: 100%; }
+body { font-family: "Fira Sans", "Open Sans", "Noto Sans", sans-serif; background: #f4f4f4; color: #333; font-size: 15px; overflow: hidden; }
+.hidden { display: none !important; }
+.view { position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: #f4f4f4;
+  display: -moz-box; -moz-box-orient: vertical; display: flex; flex-direction: column; }
+.pad { padding: 12px 16px; }
+.hint { color: #888; font-size: 13px; }
+.empty { text-align: center; color: #999; padding: 40px 16px; }
+
+.bar { background: #00aacc; color: #fff; min-height: 50px; padding: 0 6px 0 14px; flex: none;
+  display: -moz-box; -moz-box-align: center; display: flex; align-items: center; }
+.bar.dark { background: #2b2b2b; }
+.bar h1 { -moz-box-flex: 1; flex: 1; margin: 0; font-size: 20px; font-weight: 300; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.bar .icon { background: none; border: 0; color: #fff; font-size: 26px; width: 44px; min-height: 44px; padding: 0; margin: 0; }
+
+.hero { text-align: center; padding: 34px 16px 10px; }
+.hero img { width: 96px; height: 96px; }
+.hero h1 { font-weight: 300; font-size: 28px; margin: 10px 0 4px; color: #00aacc; }
+.hero p { color: #777; margin: 0; }
+
+label { display: block; margin: 12px 0 4px; font-size: 13px; color: #666; }
+input[type=email], input[type=password], input[type=text], input[type=url] {
+  width: 100%; font-size: 16px; padding: 10px; margin: 6px 0; border: 1px solid #c9c9c9; border-radius: 3px; background: #fff; }
+input:focus { border-color: #00caf2; outline: none; }
+
+/* Firefox OS button row: equal buttons, gray + cyan */
+.btnrow { display: -moz-box; display: flex; padding: 12px 14px; background: #e7e7e7; border-top: 1px solid #ccc; flex: none; }
+.btnrow button { -moz-box-flex: 1; flex: 1; margin: 0 6px; width: 0; }
+button { font: inherit; font-size: 16px; min-height: 42px; border-radius: 3px; border: 1px solid #b4b4b4; color: #333;
+  background: #f7f7f7; background-image: linear-gradient(#f7f7f7, #dadada); }
+button:active { background: #cfcfcf; }
+button.primary { background: #00caf2; background-image: none; border-color: #00a6c9; color: #fff; }
+button.primary:active { background: #00a6c9; }
+button.danger { background: #e51e1e; background-image: none; border-color: #c11616; color: #fff; }
+button[disabled] { opacity: .5; }
+
+.tabs { display: -moz-box; display: flex; background: #2b2b2b; flex: none; }
+.tabs a { -moz-box-flex: 1; flex: 1; width: 0; display: block; text-align: center; color: #bbb; text-decoration: none; padding: 11px 4px; font-size: 14px; border-bottom: 3px solid transparent; }
+.tabs a.on { color: #fff; border-bottom-color: #00caf2; }
+.tab { -moz-box-flex: 1; flex: 1; height: 0; overflow-y: auto; }
+
+.usage { display: -moz-box; -moz-box-align: center; display: flex; align-items: center; padding: 10px 14px; font-size: 12px; color: #777; }
+.usage-bar { -moz-box-flex: 1; flex: 1; height: 6px; background: #ddd; border-radius: 3px; margin-right: 10px; overflow: hidden; }
+#usage-fill { height: 100%; width: 0; background: #00caf2; }
+
+.grid { display: block; padding: 2px; font-size: 0; }   /* no flex-wrap before Gecko 28 */
+.grid .cell { display: inline-block; vertical-align: top; width: 33.333%; padding: 2px; position: relative; font-size: 12px; }
+.grid .cell div { padding-top: 100%; background-color: #ccc; background-position: center; background-size: cover;
+  background-repeat: no-repeat; border-radius: 2px; }
+.grid .cell .badge { position: absolute; bottom: 6px; right: 8px; color: #fff; font-size: 12px; text-shadow: 0 1px 2px #000; }
+@media (min-width: 600px) { .grid .cell { width: 20%; } }
+@media (min-width: 1000px) { .grid .cell { width: 14.28%; } body { font-size: 15px; } }
+
+.list { list-style: none; margin: 0; padding: 0; }
+.list li { display: -moz-box; -moz-box-align: center; display: flex; align-items: center; padding: 12px 16px; background: #fff; border-bottom: 1px solid #e5e5e5; }
+.list li .txt { -moz-box-flex: 1; flex: 1; min-width: 0; width: 0; }
+.list li .txt b { display: block; font-weight: normal; font-size: 16px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.list li .txt small { color: #888; }
+.list li button { min-height: 34px; font-size: 14px; margin-left: 8px; padding: 0 12px; }
+.dot { width: 10px; height: 10px; border-radius: 5px; background: #bbb; margin-right: 12px; flex: none; }
+.dot.on { background: #4caf50; }
+
+.notice { background: #2b2b2b; color: #eee; padding: 14px 16px; }
+.notice strong { color: #00caf2; display: block; font-weight: normal; font-size: 13px; }
+.notice span { display: block; font-size: 18px; margin: 2px 0 8px; }
+.notice small { color: #aaa; display: block; margin-top: 6px; }
+.switch-row { display: -moz-box; -moz-box-align: center; display: flex; align-items: center; color: #fff; font-size: 14px; margin: 0; }
+.switch-row input { width: 22px; height: 22px; margin: 0 10px 0 0; }
+
+.map { position: relative; height: 256px; background: #ddd; overflow: hidden; flex: none; }
+.map img { position: absolute; width: 256px; height: 256px; left: 50%; top: 0; margin-left: -128px; }
+#dev-pin { position: absolute; width: 18px; height: 18px; border-radius: 9px; background: #e51e1e; border: 3px solid #fff;
+  box-shadow: 0 1px 4px rgba(0,0,0,.6); margin: -9px 0 0 -9px; }
+
+.viewer { -moz-box-flex: 1; flex: 1; height: 0; background: #000; overflow: hidden; text-align: center;
+  display: -moz-box; -moz-box-align: center; -moz-box-pack: center; display: flex; align-items: center; justify-content: center; }
+.viewer img, .viewer video { max-width: 100%; max-height: 100%; }
+
+/* Firefox OS 1.x dialog: dark panel, big white text, equal buttons */
+.dialog { position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,.6); z-index: 10; }
+.dialog-box { position: absolute; left: 0; right: 0; bottom: 0; margin: 0 auto; max-width: 460px; background: #2d2d2d; color: #fff; }
+@media (min-width: 600px) { .dialog-box { bottom: auto; top: 22%; } }
+.dialog-box p { font-size: 19px; line-height: 1.35; margin: 0; padding: 26px 22px; border-bottom: 1px solid #555; }
+.dialog-box .btnrow { background: #1f1f1f; border-top: 0; }
+.menu-box { padding-bottom: 10px; }
+.menu-box p { font-size: 14px; color: #bbb; padding: 16px 22px; }
+.menu-box button { display: block; width: calc(100% - 28px); margin: 10px 14px 0; }
+
+.toast { position: absolute; left: 10px; right: 10px; bottom: 80px; background: rgba(30,30,30,.92); color: #fff; padding: 12px 14px; border-radius: 3px; z-index: 20; text-align: center; }
+
+/* Language picker */
+select { font: inherit; font-size: 16px; padding: 8px; border: 1px solid #c9c9c9; border-radius: 3px; background: #fff; color: #333; width: 100%; }
+.lang-row { display: -moz-box; -moz-box-align: center; display: flex; align-items: center; margin-top: 10px; }
+.lang-row span { margin-right: 10px; font-size: 18px; }
+.lang-row select { -moz-box-flex: 1; flex: 1; width: 0; }
+.menu-lang { margin: 10px 14px 0; color: #ddd; }
+.menu-lang span { font-size: 15px; }

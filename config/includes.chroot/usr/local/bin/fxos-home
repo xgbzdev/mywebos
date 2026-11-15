@@ -23,7 +23,7 @@ DOCK_FILE = os.path.join(CONF_DIR, "dock.json")
 WALL_FILE = os.path.join(CONF_DIR, "wallpaper")
 DEFAULT_WALL = "/usr/share/firefoxos/wallpapers/default.png"
 LIVE = "boot=live" in open("/proc/cmdline").read()
-DEFAULT_DOCK = ["firefox-esr.desktop", "fxos-marketplace.desktop",
+DEFAULT_DOCK = ["firefox-esr.desktop", "fxos-marketplace.desktop", "fxos-app-firecloud.desktop",
                 "thunar.desktop", "xfce-settings-manager.desktop"]
 ICON = 60          # icon size in px
 TILE = 104         # grid cell width
