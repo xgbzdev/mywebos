@@ -21,7 +21,8 @@
   function errText(err) {
     if (!err) { return ""; }
     if (err.message === "helper") { return _("helperDown"); }
-    if (err.status === 413 || /quota|exceeded|row-level|policy/i.test(err.message)) { return _("quotaFull"); }
+    if (err.status === 429 || /rate limit/i.test(err.message)) { return _("tooMany"); }
+    if (err.status === 413 || /quota|row-level|policy/i.test(err.message)) { return _("quotaFull"); }
     return _("netError", err.message);
   }
   function confirmBox(text, okLabel, danger, cb) {

@@ -6,6 +6,7 @@ var LANGS = [
 ];
 var L10N = {
   en: {
+    tooMany: "Too many attempts. FireCloud can send only a few emails per hour: please wait about an hour and try again.",
     setupTitle: "FireCloud setup", setupText: "Enter your FireCloud server (Supabase project) details once.",
     serverUrl: "Server address", publicKey: "Publishable key", keyHint: "Never use the secret / service_role key here.",
     save: "Save", tagline: "Your personal space for photos, videos, apps and devices.", email: "Email",
@@ -31,6 +32,7 @@ var L10N = {
     remove: "Remove", thisOne: "(this device)", phoneName: "Firefox OS phone", pcName: "B2L computer"
   },
   it: {
+    tooMany: "Troppi tentativi. FireCloud può inviare solo poche email all'ora: attendi circa un'ora e riprova.",
     setupTitle: "Configura FireCloud", setupText: "Inserisci una volta i dati del server FireCloud (progetto Supabase).",
     serverUrl: "Indirizzo del server", publicKey: "Chiave pubblicabile", keyHint: "Non usare mai qui la chiave segreta / service_role.",
     save: "Salva", tagline: "Il tuo spazio per foto, video, app e dispositivi.", email: "Email",
@@ -56,6 +58,7 @@ var L10N = {
     remove: "Rimuovi", thisOne: "(questo dispositivo)", phoneName: "Telefono Firefox OS", pcName: "Computer B2L"
   },
   el: {
+    tooMany: "Πάρα πολλές προσπάθειες. Το FireCloud μπορεί να στείλει λίγα email την ώρα: περιμένετε περίπου μία ώρα και δοκιμάστε ξανά.",
     setupTitle: "Ρύθμιση FireCloud", setupText: "Εισαγάγετε μία φορά τα στοιχεία του διακομιστή FireCloud (έργο Supabase).",
     serverUrl: "Διεύθυνση διακομιστή", publicKey: "Δημοσιεύσιμο κλειδί", keyHint: "Μη χρησιμοποιείτε ποτέ εδώ το μυστικό κλειδί / service_role.",
     save: "Αποθήκευση", tagline: "Ο προσωπικός σας χώρος για φωτογραφίες, βίντεο, εφαρμογές και συσκευές.", email: "Email",
@@ -82,6 +85,7 @@ var L10N = {
     remove: "Αφαίρεση", thisOne: "(αυτή η συσκευή)", phoneName: "Τηλέφωνο Firefox OS", pcName: "Υπολογιστής B2L"
   },
   es: {
+    tooMany: "Demasiados intentos. FireCloud solo puede enviar unos pocos correos por hora: espera una hora e inténtalo de nuevo.",
     setupTitle: "Configurar FireCloud", setupText: "Introduce una vez los datos del servidor FireCloud (proyecto Supabase).",
     serverUrl: "Dirección del servidor", publicKey: "Clave publicable", keyHint: "Nunca uses aquí la clave secreta / service_role.",
     save: "Guardar", tagline: "Tu espacio personal para fotos, vídeos, apps y dispositivos.", email: "Correo",
@@ -108,6 +112,7 @@ var L10N = {
     remove: "Quitar", thisOne: "(este dispositivo)", phoneName: "Teléfono Firefox OS", pcName: "Ordenador B2L"
   },
   fr: {
+    tooMany: "Trop de tentatives. FireCloud ne peut envoyer que quelques e-mails par heure : attendez environ une heure et réessayez.",
     setupTitle: "Configurer FireCloud", setupText: "Saisissez une fois les informations du serveur FireCloud (projet Supabase).",
     serverUrl: "Adresse du serveur", publicKey: "Clé publiable", keyHint: "N'utilisez jamais ici la clé secrète / service_role.",
     save: "Enregistrer", tagline: "Votre espace personnel pour photos, vidéos, applis et appareils.", email: "E-mail",
@@ -134,6 +139,7 @@ var L10N = {
     remove: "Retirer", thisOne: "(cet appareil)", phoneName: "Téléphone Firefox OS", pcName: "Ordinateur B2L"
   },
   de: {
+    tooMany: "Zu viele Versuche. FireCloud kann nur wenige E-Mails pro Stunde senden: Warte etwa eine Stunde und versuche es erneut.",
     setupTitle: "FireCloud einrichten", setupText: "Gib einmalig die Daten des FireCloud-Servers (Supabase-Projekt) ein.",
     serverUrl: "Serveradresse", publicKey: "Öffentlicher Schlüssel", keyHint: "Verwende hier niemals den geheimen / service_role-Schlüssel.",
     save: "Speichern", tagline: "Dein persönlicher Bereich für Fotos, Videos, Apps und Geräte.", email: "E-Mail",
@@ -160,6 +166,7 @@ var L10N = {
     remove: "Entfernen", thisOne: "(dieses Gerät)", phoneName: "Firefox-OS-Telefon", pcName: "B2L-Computer"
   },
   pt: {
+    tooMany: "Demasiadas tentativas. O FireCloud só pode enviar poucos emails por hora: aguarde cerca de uma hora e tente de novo.",
     setupTitle: "Configurar o FireCloud", setupText: "Introduza uma vez os dados do servidor FireCloud (projeto Supabase).",
     serverUrl: "Endereço do servidor", publicKey: "Chave publicável", keyHint: "Nunca use aqui a chave secreta / service_role.",
     save: "Guardar", tagline: "O seu espaço pessoal para fotos, vídeos, apps e dispositivos.", email: "Email",
@@ -186,6 +193,7 @@ var L10N = {
     remove: "Remover", thisOne: "(este dispositivo)", phoneName: "Telemóvel Firefox OS", pcName: "Computador B2L"
   },
   pl: {
+    tooMany: "Zbyt wiele prób. FireCloud może wysłać tylko kilka e-maili na godzinę: poczekaj około godziny i spróbuj ponownie.",
     setupTitle: "Konfiguracja FireCloud", setupText: "Wpisz jednorazowo dane serwera FireCloud (projekt Supabase).",
     serverUrl: "Adres serwera", publicKey: "Klucz publiczny", keyHint: "Nigdy nie używaj tu klucza tajnego / service_role.",
     save: "Zapisz", tagline: "Twoje miejsce na zdjęcia, filmy, aplikacje i urządzenia.", email: "E-mail",
