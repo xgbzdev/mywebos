@@ -1,0 +1,13 @@
+#!/bin/sh
+# Memory report to the serial port, only when booted with "b2l.memlog" (used by tests).
+grep -q "b2l.memlog" /proc/cmdline || exit 0
+while true; do
+    {
+        echo "=== $(date +%T) uptime: $(cut -d' ' -f1 /proc/uptime)s load: $(cut -d' ' -f1-3 /proc/loadavg)"
+        free -m
+        ps -eo rss,pcpu,comm --sort=-rss | head -n 12
+        ls /usr/lib/firefox-esr/defaults/pref/ 2>/dev/null | tr '\n' ' '; echo
+        XAUTHORITY=$(ls /home/*/.Xauthority 2>/dev/null | head -n1) wmctrl -l 2>/dev/null
+    } > /dev/ttyS0 2>&1
+    sleep 15
+done

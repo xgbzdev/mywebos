@@ -46,10 +46,12 @@ jobs:
           cat shots/iso-live-folder.txt
       - name: Boot with 512 MB and take screenshots
         run: |
+          mkdir -p shots
           ACCEL="-enable-kvm -cpu host"; [ -w /dev/kvm ] || ACCEL=""
+          echo "accel: $ACCEL" > shots/qemu-accel.txt
           qemu-system-i386 $ACCEL -m 512 -smp 1 -cdrom b2l-slim32-i386.iso -boot d \
             -vga std -display none -usb -device usb-tablet \
-            -monitor unix:/tmp/qemu-mon,server,nowait -daemonize
+            -serial file:shots/serial-memlog.txt -monitor unix:/tmp/qemu-mon,server,nowait -daemonize
           sleep 2
           python3 tools/shots-slim.py shots
       - name: Publish screenshots

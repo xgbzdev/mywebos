@@ -29,5 +29,7 @@ done
 firefox-esr "http://127.0.0.1:8090/start" &
 b2l-home-window &
 
-sleep 6
+# welcome wizard only after the home screen is up (less load at start-up)
+for i in $(seq 1 120); do wmctrl -l | grep -q "B2L Home" && break; sleep 1; done
+sleep 3
 fxos-welcome --autostart &

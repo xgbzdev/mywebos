@@ -33,6 +33,8 @@ def shot(name, wait=0):
 
 subprocess.call(["mkdir", "-p", OUT])
 shot("boot-menu", 8)
+key("tab", 1)                   # edit the boot line: switch on the memory logger
+type_text(" b2l.memlog")
 key("ret")
 shot("splash", 25)
 shot("welcome", 200)            # 512 MB + emulated disk: give it time

@@ -48,7 +48,8 @@ pref("browser.sessionstore.max_tabs_undo", 2);
 pref("browser.sessionstore.interval", 60000);
 pref("browser.sessionstore.resume_from_crash", false);
 pref("browser.cache.memory.capacity", 16384);
-pref("browser.cache.disk.capacity", 102400);
+pref("browser.cache.disk.capacity", 20480);
+pref("browser.cache.disk.smart_size.enabled", false);
 pref("media.memory_cache_max_size", 16384);
 pref("image.mem.surfacecache.max_size_kb", 65536);
 pref("layout.frame_rate", 30);
@@ -73,10 +74,7 @@ pref("app.normandy.enabled", false);
 pref("browser.discovery.enabled", false);
 pref("browser.tabs.warnOnClose", false);
 pref("dom.allow_scripts_to_close_windows", true);
-// let the home screen and B2L apps open app-style windows without an address bar
-pref("dom.disable_window_open_feature.location", false);
-pref("dom.disable_window_open_feature.toolbar", false);
-pref("dom.disable_window_open_feature.menubar", false);
+
 J
 
 # Firefox policies: allow the home screen to open its window; privacy defaults
@@ -93,6 +91,14 @@ pol["Homepage"] = {"URL": "https://duckduckgo.com/", "StartPage": "homepage"}
 os.makedirs(os.path.dirname(p), exist_ok=True)
 json.dump(d, open(p, "w"), indent=2)
 P
+
+# ---- Autoconfig: B2L window behaviour (see /usr/lib/firefox-esr/b2l.cfg)
+cat > /usr/lib/firefox-esr/defaults/pref/b2l-autoconfig.js <<'J'
+pref("general.config.filename", "b2l.cfg");
+pref("general.config.obscure_value", 0);
+pref("general.config.sandbox_enabled", false);
+J
+systemctl enable b2l-memlog.service || true
 
 # ---- More compressed RAM for 512 MB machines
 if [ -f /etc/default/zramswap ]; then

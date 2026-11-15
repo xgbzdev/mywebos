@@ -1,0 +1,10 @@
+[Unit]
+Description=B2L memory report on the serial port (test boots only)
+ConditionKernelCommandLine=b2l.memlog
+
+[Service]
+ExecStart=/usr/local/sbin/b2l-memlog
+Environment=DISPLAY=:0
+
+[Install]
+WantedBy=multi-user.target
