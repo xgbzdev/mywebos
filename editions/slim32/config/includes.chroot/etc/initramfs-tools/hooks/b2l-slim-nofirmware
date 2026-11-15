@@ -1,0 +1,9 @@
+#!/bin/sh
+# B2L Slim: no firmware in the startup image. Nothing needs it that early on
+# these machines; drivers load it later from the system. This keeps the image
+# small enough to unpack on PCs with only 512 MB of RAM.
+PREREQ=""
+prereqs() { echo "$PREREQ"; }
+case "$1" in prereqs) prereqs; exit 0 ;; esac
+rm -rf "${DESTDIR}/lib/firmware" "${DESTDIR}/usr/lib/firmware"
+exit 0

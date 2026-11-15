@@ -15,7 +15,7 @@ jobs:
       - name: Install QEMU
         run: |
           sudo apt-get update -qq
-          sudo apt-get install -y -qq qemu-system-x86 imagemagick
+          sudo apt-get install -y -qq qemu-system-x86 imagemagick xorriso
           sudo chmod 666 /dev/kvm || true
       - name: Get the newest slim ISO
         env:
@@ -25,6 +25,16 @@ jobs:
           TAG=$(gh release list -R "$GITHUB_REPOSITORY" -L 50 --json tagName -q '[.[]|select(.tagName|startswith("slim32-build-"))][0].tagName')
           echo "Using $TAG"
           gh release download "$TAG" -R "$GITHUB_REPOSITORY" --pattern 'b2l-slim32-i386.iso'
+      - name: Startup image size
+        run: |
+          mkdir -p shots
+          xorriso -indev b2l-slim32-i386.iso -ls_l /live 2>/dev/null | tee shots/iso-live-folder.txt
+          xorriso -osirrox on -indev b2l-slim32-i386.iso -extract /live/initrd.img initrd.img 2>/dev/null || true
+          if [ -f initrd.img ]; then
+            mkdir x && cd x && (xz -dc ../initrd.img 2>/dev/null || zstd -dc ../initrd.img 2>/dev/null || gzip -dc ../initrd.img) | cpio -idm 2>/dev/null
+            du -sh . | tee -a ../shots/iso-live-folder.txt
+            du -sh usr/lib/* lib/* 2>/dev/null | sort -h | tail -n 8 | tee -a ../shots/iso-live-folder.txt
+          fi
       - name: Boot with 512 MB and take screenshots
         run: |
           ACCEL="-enable-kvm -cpu host"; [ -w /dev/kvm ] || ACCEL=""
@@ -38,5 +48,5 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           gh release delete screenshots-slim32 -y --cleanup-tag -R "$GITHUB_REPOSITORY" || true
-          gh release create screenshots-slim32 shots/*.png -R "$GITHUB_REPOSITORY" --prerelease \
+          gh release create screenshots-slim32 shots/*.png shots/*.txt -R "$GITHUB_REPOSITORY" --prerelease \
             --title "Screenshots: Slim 32-bit in 512 MB" --notes "Taken automatically in QEMU with 512 MB RAM"
