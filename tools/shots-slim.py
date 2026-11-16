@@ -82,3 +82,10 @@ shot("new-wallpaper", 2)
 # right-click must not give the browser menu / inspector
 key("ctrl-shift-i", 3); key("ctrl-u", 3)
 shot("no-inspector", 1)
+
+# 7. Start menu (rocket button / Super key)
+key("meta_l", 4)
+shot("start-menu", 1)
+key("esc", 2)
+key("meta_l", 4); type_text("calc"); key("ret", 6)
+shot("start-menu-opened-app", 2)

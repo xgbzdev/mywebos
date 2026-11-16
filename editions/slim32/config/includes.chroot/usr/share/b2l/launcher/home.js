@@ -233,6 +233,10 @@
   if (window.EventSource) {
     var es = new EventSource("/api/events");
     es.addEventListener("home", function () { goHome(); load(); });
+    es.addEventListener("open", function (e) {
+      var go = function () { if (apps[e.data]) { open(e.data); } };
+      if (apps[e.data]) { go(); } else { lastKey = ""; load(); setTimeout(go, 1500); }
+    });
   }
 
   /* ---------- folders ---------- */

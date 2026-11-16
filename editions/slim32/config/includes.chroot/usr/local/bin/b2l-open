@@ -1,0 +1,9 @@
+#!/bin/sh
+# Start menu: open an app the same way a tap on the home screen does.
+exec python3 - "$1" <<'P'
+import json, os, sys, urllib.request
+t = open(os.path.expanduser("~/.config/firefoxos/.launcher-token")).read().strip()
+r = urllib.request.Request("http://127.0.0.1:8090/api/open", data=json.dumps({"token": t, "id": sys.argv[1]}).encode(),
+                           headers={"Content-Type": "application/json"})
+urllib.request.urlopen(r, timeout=3)
+P

@@ -1,0 +1,6 @@
+[Desktop Entry]
+Type=Application
+Name=Start
+Exec=b2l-startmenu
+Icon=/usr/share/firefoxos/icons/firefoxos.png
+NoDisplay=true

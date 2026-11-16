@@ -1,0 +1,51 @@
+#!/usr/bin/python3
+"""Start menu: a small pop-up list of all apps plus the power buttons.
+Drawn by jgmenu (tiny, starts instantly); type to search."""
+import json, os, re, sys, tempfile, urllib.request
+
+LANG = os.environ.get("LANG", "en")[:2]
+T = {
+    "en": ("Home screen", "Hibernate", "Log out", "Restart", "Shut down", "Apps", "Power"),
+    "it": ("Schermata Home", "Iberna", "Esci", "Riavvia", "Spegni", "App", "Alimentazione"),
+    "el": ("Αρχική οθόνη", "Αδρανοποίηση", "Αποσύνδεση", "Επανεκκίνηση", "Τερματισμός", "Εφαρμογές", "Ενέργεια"),
+    "es": ("Pantalla de inicio", "Hibernar", "Cerrar sesión", "Reiniciar", "Apagar", "Aplicaciones", "Energía"),
+    "fr": ("Écran d'accueil", "Hiberner", "Se déconnecter", "Redémarrer", "Éteindre", "Applications", "Alimentation"),
+    "de": ("Startbildschirm", "Ruhezustand", "Abmelden", "Neu starten", "Herunterfahren", "Apps", "Energie"),
+    "pt": ("Tela inicial", "Hibernar", "Sair", "Reiniciar", "Desligar", "Aplicativos", "Energia"),
+    "pl": ("Ekran główny", "Hibernacja", "Wyloguj", "Uruchom ponownie", "Wyłącz", "Aplikacje", "Zasilanie"),
+}.get(LANG) or None
+if T is None:
+    T = ("Home screen", "Hibernate", "Log out", "Restart", "Shut down", "Apps", "Power")
+
+
+def clean(s):
+    return re.sub(r"[,\n\r^]", " ", s).strip()
+
+
+def icon(name):
+    for p in ("/usr/share/icons/Papirus/24x24/actions/%s.svg", "/usr/share/icons/Papirus/24x24/apps/%s.svg",
+              "/usr/share/icons/Papirus/22x22/actions/%s.svg"):
+        if os.path.exists(p % name):
+            return p % name
+    return name
+
+
+try:
+    apps = json.load(urllib.request.urlopen("http://127.0.0.1:8090/api/menu", timeout=3))
+except Exception:
+    apps = []
+
+rows = ["%s,b2l-home,%s" % (T[0], "/usr/share/firefoxos/icons/firefoxos.png"), "^sep(%s)" % T[5]]
+for a in apps:
+    if re.match(r"^[A-Za-z0-9._@-]+$", a.get("id", "")):
+        rows.append("%s,b2l-open %s,%s" % (clean(a["name"]), a["id"], clean(a.get("icon", ""))))
+rows += ["^sep(%s)" % T[6],
+         "%s,b2l-power hibernate,%s" % (T[1], icon("system-suspend-hibernate")),
+         "%s,b2l-power logout,%s" % (T[2], icon("system-log-out")),
+         "%s,b2l-power reboot,%s" % (T[3], icon("system-reboot")),
+         "%s,b2l-power poweroff,%s" % (T[4], icon("system-shutdown"))]
+
+f = tempfile.TemporaryFile("w+")
+f.write("\n".join(rows) + "\n"); f.flush(); f.seek(0)
+os.dup2(f.fileno(), 0)
+os.execvp("jgmenu", ["jgmenu", "--simple", "--config-file=/etc/xdg/b2l/startmenu.rc"])

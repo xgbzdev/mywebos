@@ -9,7 +9,7 @@ import re
 p = "/etc/xdg/openbox/rc.xml"
 s = open(p).read()
 keys = """
-    <keybind key="Super_L"><action name="Execute"><command>b2l-home</command></action></keybind>
+    <keybind key="Super_L"><action name="Execute"><command>b2l-startmenu</command></action></keybind>
     <keybind key="W-d"><action name="Execute"><command>b2l-home</command></action></keybind>
     <keybind key="C-A-t"><action name="Execute"><command>lxterminal</command></action></keybind>
     <keybind key="W-e"><action name="Execute"><command>pcmanfm</command></action></keybind>

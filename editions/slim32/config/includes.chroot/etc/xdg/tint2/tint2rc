@@ -27,7 +27,7 @@ border_color = #ffffff 0
 launcher_padding = 2 2 4
 launcher_background_id = 0
 launcher_icon_size = 20
-launcher_item_app = /usr/share/applications/b2l-home.desktop
+launcher_item_app = /usr/share/applications/b2l-startmenu.desktop
 
 taskbar_mode = single_desktop
 taskbar_padding = 4 0 4
