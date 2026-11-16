@@ -106,9 +106,11 @@
   function safeJwt(k) { try { return atob(k.split(".")[1].replace(/-/g, "+").replace(/_/g, "/")); } catch (e) { return ""; } }
 
   /* ---------- login ---------- */
-  function creds() {
+  /* signing in: any password (the server checks it); new accounts: at least 8 characters */
+  function creds(isNew) {
     var e = $("login-email").value.trim(), p = $("login-pass").value;
-    if (!/@/.test(e) || p.length < 8) { toast(_("needFields")); return null; }
+    if (!/@/.test(e) || !p) { toast(_("needLogin")); return null; }
+    if (isNew && p.length < 8) { toast(_("needFields")); return null; }
     return { e: e, p: p };
   }
   $("btn-login").onclick = function () {
@@ -122,7 +124,7 @@
     });
   };
   $("btn-signup").onclick = function () {
-    var c = creds(); if (!c) { return; }
+    var c = creds(true); if (!c) { return; }
     Net.helperAlive(function (ok) {
       if (!ok) { toast(_("helperDown"), 6000); return; }
       Auth.signUp(c.e, c.p, function (err, s) {

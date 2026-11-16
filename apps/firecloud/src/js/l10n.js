@@ -6,6 +6,7 @@ var LANGS = [
 ];
 var L10N = {
   en: {
+    needLogin: "Enter your email and password.",
     deleteAccount: "Delete account", deleteAccountQ: "Delete your FireCloud account? All your photos, videos, apps and devices will be erased. This can't be undone.",
     deletingAccount: "Deleting your account…", accountDeleted: "Your FireCloud account has been deleted.",
     tooMany: "Too many attempts. FireCloud can send only a few emails per hour: please wait about an hour and try again.",
@@ -34,6 +35,7 @@ var L10N = {
     remove: "Remove", thisOne: "(this device)", phoneName: "Firefox OS phone", pcName: "B2L computer"
   },
   it: {
+    needLogin: "Inserisci l'email e la password.",
     deleteAccount: "Elimina account", deleteAccountQ: "Eliminare il tuo account FireCloud? Tutte le foto, i video, le app e i dispositivi verranno cancellati. Non si può annullare.",
     deletingAccount: "Eliminazione dell'account…", accountDeleted: "Il tuo account FireCloud è stato eliminato.",
     tooMany: "Troppi tentativi. FireCloud può inviare solo poche email all'ora: attendi circa un'ora e riprova.",
@@ -62,6 +64,7 @@ var L10N = {
     remove: "Rimuovi", thisOne: "(questo dispositivo)", phoneName: "Telefono Firefox OS", pcName: "Computer B2L"
   },
   el: {
+    needLogin: "Εισαγάγετε το email και τον κωδικό σας.",
     deleteAccount: "Διαγραφή λογαριασμού", deleteAccountQ: "Διαγραφή του λογαριασμού σας στο FireCloud; Όλες οι φωτογραφίες, τα βίντεο, οι εφαρμογές και οι συσκευές σας θα διαγραφούν. Δεν αναιρείται.",
     deletingAccount: "Διαγραφή λογαριασμού…", accountDeleted: "Ο λογαριασμός σας στο FireCloud διαγράφηκε.",
     tooMany: "Πάρα πολλές προσπάθειες. Το FireCloud μπορεί να στείλει λίγα email την ώρα: περιμένετε περίπου μία ώρα και δοκιμάστε ξανά.",
@@ -91,6 +94,7 @@ var L10N = {
     remove: "Αφαίρεση", thisOne: "(αυτή η συσκευή)", phoneName: "Τηλέφωνο Firefox OS", pcName: "Υπολογιστής B2L"
   },
   es: {
+    needLogin: "Introduce tu email y tu contraseña.",
     deleteAccount: "Eliminar cuenta", deleteAccountQ: "¿Eliminar tu cuenta de FireCloud? Se borrarán todas tus fotos, vídeos, apps y dispositivos. No se puede deshacer.",
     deletingAccount: "Eliminando tu cuenta…", accountDeleted: "Tu cuenta de FireCloud se ha eliminado.",
     tooMany: "Demasiados intentos. FireCloud solo puede enviar unos pocos correos por hora: espera una hora e inténtalo de nuevo.",
@@ -120,6 +124,7 @@ var L10N = {
     remove: "Quitar", thisOne: "(este dispositivo)", phoneName: "Teléfono Firefox OS", pcName: "Ordenador B2L"
   },
   fr: {
+    needLogin: "Saisissez votre e-mail et votre mot de passe.",
     deleteAccount: "Supprimer le compte", deleteAccountQ: "Supprimer votre compte FireCloud ? Toutes vos photos, vidéos, applis et appareils seront effacés. C'est irréversible.",
     deletingAccount: "Suppression du compte…", accountDeleted: "Votre compte FireCloud a été supprimé.",
     tooMany: "Trop de tentatives. FireCloud ne peut envoyer que quelques e-mails par heure : attendez environ une heure et réessayez.",
@@ -149,6 +154,7 @@ var L10N = {
     remove: "Retirer", thisOne: "(cet appareil)", phoneName: "Téléphone Firefox OS", pcName: "Ordinateur B2L"
   },
   de: {
+    needLogin: "Gib deine E-Mail und dein Passwort ein.",
     deleteAccount: "Konto löschen", deleteAccountQ: "Dein FireCloud-Konto löschen? Alle Fotos, Videos, Apps und Geräte werden gelöscht. Das kann nicht rückgängig gemacht werden.",
     deletingAccount: "Konto wird gelöscht…", accountDeleted: "Dein FireCloud-Konto wurde gelöscht.",
     tooMany: "Zu viele Versuche. FireCloud kann nur wenige E-Mails pro Stunde senden: Warte etwa eine Stunde und versuche es erneut.",
@@ -178,6 +184,7 @@ var L10N = {
     remove: "Entfernen", thisOne: "(dieses Gerät)", phoneName: "Firefox-OS-Telefon", pcName: "B2L-Computer"
   },
   pt: {
+    needLogin: "Digite seu e-mail e sua senha.",
     deleteAccount: "Eliminar conta", deleteAccountQ: "Eliminar a sua conta FireCloud? Todas as fotos, vídeos, apps e dispositivos serão apagados. Não é possível anular.",
     deletingAccount: "A eliminar a conta…", accountDeleted: "A sua conta FireCloud foi eliminada.",
     tooMany: "Demasiadas tentativas. O FireCloud só pode enviar poucos emails por hora: aguarde cerca de uma hora e tente de novo.",
@@ -207,6 +214,7 @@ var L10N = {
     remove: "Remover", thisOne: "(este dispositivo)", phoneName: "Telemóvel Firefox OS", pcName: "Computador B2L"
   },
   pl: {
+    needLogin: "Wpisz e-mail i hasło.",
     deleteAccount: "Usuń konto", deleteAccountQ: "Usunąć konto FireCloud? Wszystkie zdjęcia, filmy, aplikacje i urządzenia zostaną skasowane. Tego nie można cofnąć.",
     deletingAccount: "Usuwanie konta…", accountDeleted: "Twoje konto FireCloud zostało usunięte.",
     tooMany: "Zbyt wiele prób. FireCloud może wysłać tylko kilka e-maili na godzinę: poczekaj około godziny i spróbuj ponownie.",
