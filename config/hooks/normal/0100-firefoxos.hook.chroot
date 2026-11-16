@@ -202,6 +202,35 @@ O
 ln -sf ../usr/lib/os-release /etc/os-release
 echo "Firefox OS 2.0 \\n \\l" > /etc/issue
 echo "Firefox OS 2.0" > /etc/issue.net
+# Installer slideshow: our own slide instead of Debian's artwork
+if [ -f "$B/branding.desc" ]; then
+    cp /usr/share/firefoxos/installer-slide.png "$B/firefoxos-slide.png"
+    cat > "$B/firefoxos-show.qml" <<'Q'
+import QtQuick 2.0;
+import calamares.slideshow 1.0;
+
+Presentation {
+    id: presentation
+    function onActivate() { }
+    function onLeave() { }
+    Slide {
+        Image {
+            id: pic
+            source: "firefoxos-slide.png"
+            width: parent.width; height: parent.height - 60
+            fillMode: Image.PreserveAspectFit
+            anchors.top: parent.top
+        }
+        Text {
+            anchors.top: pic.bottom; anchors.horizontalCenter: parent.horizontalCenter
+            width: parent.width; wrapMode: Text.WordWrap; horizontalAlignment: Text.Center
+            text: "Welcome to Firefox OS.<br/>The rest of the installation is automated and should complete in a few minutes."
+        }
+    }
+}
+Q
+    sed -i -E 's/^(\s*slideshow:).*/\1 "firefoxos-show.qml"/' "$B/branding.desc"
+fi
 # Calamares writes os-release name into GRUB on install via this branding key:
 [ -f "$B/branding.desc" ] && sed -i -E 's/^(\s*bootloaderEntryName:).*/\1 "Firefox OS"/' "$B/branding.desc"
 # ==== Firefox OS 2.x-style build ============================================
