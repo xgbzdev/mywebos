@@ -271,6 +271,31 @@ def launch(app):
     return True
 
 
+# Runs inside each Firefox OS app on the home screen. Apps there can't open
+# windows of their own (that window would cover the home screen), so links,
+# window.open() and downloads go to the normal Firefox browser instead.
+FRAME_JS = r"""(function () {
+  if (window.parent === window) { return; }
+  function out(u) {
+    try { u = new URL(u, location.href).href; } catch (e) { return false; }
+    if (!/^https?:\/\//.test(u)) { return false; }
+    window.parent.postMessage({ b2lOpen: u }, "http://127.0.0.1:8090");
+    return true;
+  }
+  window.open = function (u) { if (u) { out(String(u)); } return null; };
+  document.addEventListener("click", function (e) {
+    var a = e.target && e.target.closest ? e.target.closest("a[href]") : null;
+    if (!a) { return; }
+    var t = (a.getAttribute("target") || "").toLowerCase();
+    var external = a.origin !== location.origin;
+    if ((t && t !== "_self") || (external && /^https?:/.test(a.href))) {
+      if (out(a.href)) { e.preventDefault(); }
+    }
+  }, true);
+})();
+"""
+
+
 def push_event(name, val):
     with HOME_EVENT:
         HOME_SEQ[0] += 1
@@ -341,7 +366,19 @@ class Handler(BaseHTTPRequestHandler):
         root = os.path.join(HOME, ".local/share/firefoxos/apps", app_id, "package")
         if not os.path.isdir(root):
             return self.send(404, "no such app")
-        return self.file(root, urllib.parse.unquote(path))
+        path = urllib.parse.unquote(path)
+        if path == "/__b2l/frame.js":
+            return self.send(200, FRAME_JS, "text/javascript; charset=utf-8")
+        f = os.path.realpath(os.path.join(root, path.lstrip("/") or "index.html"))
+        if f.startswith(os.path.realpath(root) + os.sep) and f.endswith((".html", ".htm")) and os.path.isfile(f):
+            # every app page gets the small helper that sends links/downloads to the browser
+            with open(f, "rb") as fh:
+                html = fh.read()
+            tag = b'<script src="/__b2l/frame.js"></script>'
+            m = re.search(rb"<head[^>]*>", html, re.I)
+            html = html[:m.end()] + tag + html[m.end():] if m else tag + html
+            return self.send(200, html, "text/html; charset=utf-8", {"Cache-Control": "no-cache"})
+        return self.file(root, path)
 
     def events(self):
         """Server-sent events: tells the home screen when the Start button is pressed."""

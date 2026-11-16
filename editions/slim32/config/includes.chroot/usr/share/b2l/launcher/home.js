@@ -179,7 +179,7 @@
       f = document.createElement("iframe");
       f.setAttribute("data-app", id);
       /* each app keeps its own origin (<id>.localhost) and cannot touch the home screen */
-      f.setAttribute("sandbox", "allow-scripts allow-same-origin allow-forms allow-popups allow-modals allow-downloads allow-popups-to-escape-sandbox");
+      f.setAttribute("sandbox", "allow-scripts allow-same-origin allow-forms allow-modals allow-downloads");
       f.setAttribute("allow", "geolocation; autoplay; fullscreen; clipboard-write");
       f.className = a.portrait ? "phone" : "full";
       f.src = a.url;
@@ -230,6 +230,12 @@
   $("cards").onclick = function (e) { if (e.target === this) { this.classList.add("hidden"); } };
 
   /* Start button / Super key (sent by the launcher service) */
+  /* links / downloads from apps on the home screen open in the Firefox browser */
+  window.addEventListener("message", function (e) {
+    if (!/^http:\/\/[a-z0-9-]+\.localhost:8090$/.test(e.origin) || !e.data || typeof e.data.b2lOpen !== "string") { return; }
+    api("POST", "/api/browse", { url: e.data.b2lOpen }, function () {});
+  });
+
   if (window.EventSource) {
     var es = new EventSource("/api/events");
     es.addEventListener("home", function () { goHome(); load(); });
