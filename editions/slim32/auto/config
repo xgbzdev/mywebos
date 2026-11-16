@@ -11,7 +11,7 @@ lb config noauto \
     --bootloaders syslinux \
     --debian-installer none \
     --iso-application "Firefox OS" \
-    --iso-publisher "B2L - Back To Life" \
+    --iso-publisher "Firefox OS" \
     --iso-volume "B2L_SLIM32" \
     --image-name live-image \
     --memtest none \
