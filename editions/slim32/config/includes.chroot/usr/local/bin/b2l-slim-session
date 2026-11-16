@@ -3,6 +3,18 @@
 mkdir -p "$HOME/.cache" "$HOME/.config/firefoxos"
 exec >>"$HOME/.cache/b2l-session.log" 2>&1
 
+# After a log out + log in, the previous session's helpers can still be running
+# (they are not X programs, so they don't stop with the screen). Two copies of
+# the home screen would keep closing each other, so stop the old ones first.
+pkill -u "$(id -u)" -f "bin/b2l-shell" 2>/dev/null
+pkill -u "$(id -u)" -f "bin/b2l-launcherd" 2>/dev/null
+pkill -u "$(id -u)" -f -- "--class B2LHome" 2>/dev/null
+for i in 1 2 3 4 5; do
+    pgrep -u "$(id -u)" -f "bin/b2l-launcherd|bin/b2l-shell" >/dev/null || break
+    sleep 1
+done
+pkill -9 -u "$(id -u)" -f "bin/b2l-launcherd|bin/b2l-shell" 2>/dev/null
+
 KB="$HOME/.config/firefoxos/keyboard"
 [ -f "$KB" ] && setxkbmap "$(cat "$KB")"
 xsetroot -solid "#3a3d40"

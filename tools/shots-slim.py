@@ -89,3 +89,10 @@ shot("start-menu", 1)
 key("esc", 2)
 key("meta_l", 4); type_text("calc"); key("ret", 6)
 shot("start-menu-opened-app", 2)
+
+# 8. log out and back in: the home screen must come back
+key("esc", 2); key("ctrl-alt-t", 8)
+type_text("b2l-power logout"); key("ret", 25)
+shot("logged-out", 1)
+type_text("user"); key("tab", 1); type_text("live"); key("ret", 90)
+shot("after-relogin", 2)

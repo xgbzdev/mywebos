@@ -4,7 +4,9 @@ say() { notify-send -i dialog-information "Firefox OS" "$1" 2>/dev/null; }
 case "$1" in
     poweroff) systemctl poweroff ;;
     reboot)   systemctl reboot ;;
-    logout)   openbox --exit ;;
+    logout)
+        pkill -u "$(id -u)" -f "bin/b2l-shell|bin/b2l-launcherd" 2>/dev/null
+        openbox --exit ;;
     hibernate)
         if grep -q "boot=live" /proc/cmdline; then
             say "Hibernate works after Firefox OS is installed (it needs a swap partition as big as the RAM)."

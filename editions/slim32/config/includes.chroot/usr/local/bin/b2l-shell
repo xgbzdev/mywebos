@@ -45,7 +45,10 @@ cleanup() {
     rm -f "$P/lock" "$P/.parentlock" "$P/xulstore.json"
 }
 
+# stop for good when this desktop session ends (log out)
+WM=$(pgrep -n -u "$(id -u)" -x openbox)
 while true; do
+    if [ -n "$WM" ] && ! kill -0 "$WM" 2>/dev/null; then cleanup; exit 0; fi
     cleanup
     firefox-esr --no-remote --class B2LHome --name B2LHome --profile "$P" "http://127.0.0.1:8090/"
     sleep 1
